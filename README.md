@@ -1,5 +1,6 @@
 Rust IP2Location
 -----------------
+![Crates.io](https://img.shields.io/crates/v/ip2location)
 [![Build Status](https://travis-ci.com/marirs/rust-ip2location.svg?branch=main)](https://travis-ci.com/marirs/rust-ip2location)
 
 This library reads the IP2Location DB format and returns geo information for the given IP.
