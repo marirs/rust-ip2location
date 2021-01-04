@@ -81,6 +81,10 @@ ip2location = "0.1.0"
 ### License
 This is free software, licensed under the MIT license.
 
+### Ip2Location Databses:
+- [Free](https://lite.ip2location.com/)
+- [Commercial](https://ip2location.com/database/ip2location)
+
 ---
 Sriram
 
