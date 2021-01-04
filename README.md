@@ -1,5 +1,6 @@
 Rust IP2Location
 -----------------
+[![Build Status](https://travis-ci.com/marirs/rust-ip2location.svg?branch=main)](https://travis-ci.com/marirs/rust-ip2location)
 
 This library reads the IP2Location DB format and returns geo information for the given IP.
 
