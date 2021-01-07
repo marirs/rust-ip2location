@@ -74,15 +74,6 @@ fn test_err_filenotfound() -> Result<(), error::Error> {
 }
 
 #[test]
-fn test_err_norecordfound() -> Result<(), error::Error> {
-    let mut db = DB::from_file(IPV4BIN)?;
-    let record = db.ip_lookup("51.5.51.5");
-    let expected = Err(error::Error::GenericError("no record found".to_string()));
-    assert_eq!(record, expected);
-    Ok(())
-}
-
-#[test]
 fn test_err_invalidipaddress() -> Result<(), error::Error> {
     let mut db = DB::from_file(IPV4BIN)?;
     let record = db.ip_lookup("invalid");
