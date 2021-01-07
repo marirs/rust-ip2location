@@ -215,7 +215,7 @@ impl DB {
             low = self.read_u32(index as u64)?;
             high = self.read_u32((index + 4) as u64)?;
         }
-        while low < high {
+        while low <= high {
             let mid = (low + high) >> 1;
             let ip_from = self.read_u32((self.ipv4_db_addr + mid * (self.db_column as u32) * 4) as u64)?;
             let ip_to = self.read_u32((self.ipv4_db_addr + (mid + 1) * (self.db_column as u32) * 4) as u64)?;
@@ -241,7 +241,7 @@ impl DB {
             low = self.read_u32(index as u64)?;
             high = self.read_u32((index + 4) as u64)?;
         }
-        while low < high {
+        while low <= high {
             let mid = (low + high) >> 1;
             let ip_from = self.read_ipv6((self.ipv6_db_addr + mid * ((self.db_column as u32) * 4 + 12)) as u64)?;
             let ip_to = self.read_ipv6((self.ipv6_db_addr + (mid + 1) * ((self.db_column as u32) * 4 + 12)) as u64)?;
