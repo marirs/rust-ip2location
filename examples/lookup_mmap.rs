@@ -4,11 +4,17 @@ use ip2location::DB;
 
 fn main() -> Result<(), String> {
     let mut args = std::env::args().skip(1);
-    let mut db = DB::from_file_mmap(
-        &*args.next()
+    let mut db = match DB::from_file_mmap(
+        &*args
+            .next()
             .ok_or_else(|| "First argument is the path to db")?,
-    )
-        .unwrap();
+    ) {
+        Ok(db) => db,
+        Err(e) => {
+            println!("{:?}", e);
+            std::process::exit(1)
+        }
+    };
 
     let ip: IpAddr = args
         .next()
@@ -23,7 +29,7 @@ fn main() -> Result<(), String> {
     // print the IP information
     match db.ip_lookup(&*ip.to_string()) {
         Ok(record) => println!("{:#?}", record),
-        Err(e) => println!("{:?}", e)
+        Err(e) => println!("{:?}", e),
     };
 
     Ok(())
