@@ -68,7 +68,9 @@ fn test_err_filenotfound() -> Result<(), error::Error> {
     let db = DB::from_file("nonexistant.bin");
     assert!(db.is_err());
     let result = &db.unwrap_err();
-    let expected = &error::Error::IoError("Error opening DB file: No such file or directory (os error 2)".to_string());
+    let expected = &error::Error::IoError(
+        "Error opening DB file: No such file or directory (os error 2)".to_string(),
+    );
     assert_eq!(result, expected);
     Ok(())
 }
@@ -81,4 +83,3 @@ fn test_err_invalidipaddress() -> Result<(), error::Error> {
     assert_eq!(record, expected);
     Ok(())
 }
-
