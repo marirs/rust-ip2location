@@ -1,7 +1,4 @@
-use std::{
-    io,
-    fmt,
-};
+use std::{fmt, io};
 
 #[derive(PartialEq)]
 pub enum Error {
@@ -45,21 +42,11 @@ impl From<std::net::AddrParseError> for Error {
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::GenericError(msg) => {
-                write!(f, "GenericError: {}", msg)?
-            },
-            Error::IoError(msg) => {
-                write!(f, "IoError: {}", msg)?
-            },
-            Error::RecordNotFound(msg) => {
-                write!(f, "RecordNotFound: {}", msg)?
-            },
-            Error::InvalidIP(msg) => {
-                write!(f, "InvalidIP: {}", msg)?
-            },
-            Error::InvalidState(msg) => {
-                write!(f, "InvalidState: {}", msg)?
-            },
+            Error::GenericError(msg) => write!(f, "GenericError: {}", msg)?,
+            Error::IoError(msg) => write!(f, "IoError: {}", msg)?,
+            Error::RecordNotFound(msg) => write!(f, "RecordNotFound: {}", msg)?,
+            Error::InvalidIP(msg) => write!(f, "InvalidIP: {}", msg)?,
+            Error::InvalidState(msg) => write!(f, "InvalidState: {}", msg)?,
         }
         Ok(())
     }
