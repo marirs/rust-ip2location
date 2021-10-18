@@ -21,12 +21,4 @@ fn test_error_display() {
         format!("{:?}", Error::RecordNotFound),
         "RecordNotFound: no record found".to_string()
     );
-
-    assert_eq!(
-        format!(
-            "{:?}",
-            Error::InvalidIP("ip address is invalid".to_string())
-        ),
-        "InvalidIP: ip address is invalid".to_string()
-    );
 }

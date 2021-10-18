@@ -1,10 +1,9 @@
 use std::{
     fs::File,
     io::{Read, Seek, SeekFrom},
-    net::{Ipv4Addr, Ipv6Addr},
+    net::{IpAddr, Ipv6Addr},
     path::{Path, PathBuf},
     result::Result,
-    str::FromStr,
 };
 
 use memmap::Mmap;
@@ -150,7 +149,7 @@ impl DB {
         println!(" |- IPv6 Index Base Address: {}", self.ipv6_index_base_addr);
     }
 
-    pub fn ip_lookup(&mut self, ip: &str) -> Result<record::Record, error::Error> {
+    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<record::Record, error::Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the Geo information
         //!
         //! ## Example usage
@@ -159,23 +158,23 @@ impl DB {
         //! use ip2location::DB;
         //!
         //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.IPV6.BIN").unwrap();
-        //! let geo_info = db.ip_lookup("2a01:cb08:8d14::").unwrap();
+        //! let geo_info = db.ip_lookup("2a01:cb08:8d14::".parse().unwrap()).unwrap();
         //! println!("{:#?}", geo_info);
         //! assert!(!geo_info.country.is_none());
         //! assert_eq!(geo_info.country.unwrap().short_name, "FR")
         //!```
-        if Self::is_ipv4(ip) {
-            let ip_number = u32::from(Ipv4Addr::from_str(ip)?);
-            let mut record = self.ipv4_lookup(ip_number)?;
-            record.ip = ip.into();
-            return Ok(record);
-        } else if Self::is_ipv6(ip) {
-            let ipv6 = Ipv6Addr::from_str(ip)?;
-            let mut record = self.ipv6_lookup(ipv6)?;
-            record.ip = ip.into();
-            return Ok(record);
+        match ip {
+            IpAddr::V4(ipv4) => {
+                let mut record = self.ipv4_lookup(u32::from(ipv4))?;
+                record.ip = ip;
+                return Ok(record);
+            }
+            IpAddr::V6(ipv6) => {
+                let mut record = self.ipv6_lookup(ipv6)?;
+                record.ip = ip.into();
+                return Ok(record);
+            }
         }
-        Err(error::Error::InvalidIP("ip address is invalid".into()))
     }
 
     fn new(db: UnopenedDB, source: Source) -> Self {
@@ -504,27 +503,5 @@ impl DB {
         }
         let result = Ipv6Addr::from(buf);
         Ok(result)
-    }
-
-    fn is_ipv4(ip: &str) -> bool {
-        match Ipv4Addr::from_str(ip) {
-            Ok(_) => {
-                true
-            }
-            Err(_) => {
-                false
-            }
-        }
-    }
-
-    fn is_ipv6(ip: &str) -> bool {
-        match Ipv6Addr::from_str(ip) {
-            Ok(_) => {
-                true
-            }
-            Err(_) => {
-                false
-            }
-        }
     }
 }
