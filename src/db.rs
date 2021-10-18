@@ -10,6 +10,7 @@ use std::{
 use memmap::Mmap;
 
 use crate::{consts, error, record};
+use crate::error::Error;
 
 #[derive(Debug)]
 struct UnopenedDB {
@@ -237,7 +238,7 @@ impl DB {
                 }
             }
         }
-        Err("no record found".into())
+        Err(Error::RecordNotFound)
     }
 
     fn ipv6_lookup(&mut self, ipv6: Ipv6Addr) -> Result<record::Record, error::Error> {
@@ -268,7 +269,7 @@ impl DB {
                 }
             }
         }
-        Err("no record found".into())
+        Err(Error::RecordNotFound)
     }
 
     fn read_record(&mut self, row_addr: u32) -> Result<record::Record, error::Error> {

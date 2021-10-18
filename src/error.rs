@@ -4,7 +4,7 @@ use std::{fmt, io};
 pub enum Error {
     GenericError(String),
     IoError(String),
-    RecordNotFound(String),
+    RecordNotFound,
     InvalidIP(String),
 }
 
@@ -43,7 +43,7 @@ impl fmt::Debug for Error {
         match self {
             Error::GenericError(msg) => write!(f, "GenericError: {}", msg)?,
             Error::IoError(msg) => write!(f, "IoError: {}", msg)?,
-            Error::RecordNotFound(msg) => write!(f, "RecordNotFound: {}", msg)?,
+            Error::RecordNotFound => write!(f, "RecordNotFound: no record found")?,
             Error::InvalidIP(msg) => write!(f, "InvalidIP: {}", msg)?,
         }
         Ok(())
