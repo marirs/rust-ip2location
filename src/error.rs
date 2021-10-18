@@ -6,7 +6,6 @@ pub enum Error {
     IoError(String),
     RecordNotFound(String),
     InvalidIP(String),
-    InvalidState(String),
 }
 
 impl From<io::Error> for Error {
@@ -46,7 +45,6 @@ impl fmt::Debug for Error {
             Error::IoError(msg) => write!(f, "IoError: {}", msg)?,
             Error::RecordNotFound(msg) => write!(f, "RecordNotFound: {}", msg)?,
             Error::InvalidIP(msg) => write!(f, "InvalidIP: {}", msg)?,
-            Error::InvalidState(msg) => write!(f, "InvalidState: {}", msg)?,
         }
         Ok(())
     }
