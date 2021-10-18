@@ -18,7 +18,7 @@ fn test_error_display() {
     );
 
     assert_eq!(
-        format!("{:?}", Error::RecordNotFound("no record found".to_string())),
+        format!("{:?}", Error::RecordNotFound),
         "RecordNotFound: no record found".to_string()
     );
 
