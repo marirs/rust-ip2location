@@ -272,7 +272,7 @@ impl DB {
     }
 
     fn read_record(&mut self, row_addr: u32) -> Result<record::Record, error::Error> {
-        let mut result = record::Record::new_empty();
+        let mut result = record::Record::default();
 
         if consts::COUNTRY_POSITION[self.db_type as usize] > 0 {
             let index = self.read_u32(

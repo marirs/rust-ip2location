@@ -8,7 +8,7 @@ pub struct Country {
 }
 
 #[skip_serializing_none]
-#[derive(PartialEq, Debug, Clone, Serialize)]
+#[derive(PartialEq, Debug, Default, Clone, Serialize)]
 pub struct Record {
     pub ip: String,
     pub latitude: Option<f32>,
@@ -33,31 +33,6 @@ pub struct Record {
 }
 
 impl Record {
-    pub fn new_empty() -> Self {
-        Self {
-            ip: "".to_string(),
-            latitude: None,
-            longitude: None,
-            country: None,
-            region: None,
-            city: None,
-            isp: None,
-            domain: None,
-            zip_code: None,
-            time_zone: None,
-            net_speed: None,
-            idd_code: None,
-            area_code: None,
-            weather_station_code: None,
-            weather_station_name: None,
-            mcc: None,
-            mnc: None,
-            mobile_brand: None,
-            elevation: None,
-            usage_type: None,
-        }
-    }
-
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
