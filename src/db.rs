@@ -476,16 +476,16 @@ impl DB {
                 f.seek(SeekFrom::Start(offset + 1))?;
                 let mut buf = vec![0_u8; len];
                 f.read(&mut buf)?;
-                let s = std::str::from_utf8(&buf)?;
-                Ok(s.into())
+                let s = String::from_utf8(buf)?;
+                Ok(s)
             }
             Source::Mmap(m) => {
                 let mut buf = vec![0_u8; len];
                 for i in 0..len {
                     buf[i] = m[(offset + 1) as usize + i];
                 }
-                let s = std::str::from_utf8(&buf)?;
-                Ok(s.into())
+                let s = String::from_utf8(buf)?;
+                Ok(s)
             }
         }
     }
