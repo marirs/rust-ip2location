@@ -20,8 +20,8 @@ impl From<&str> for Error {
     }
 }
 
-impl From<std::str::Utf8Error> for Error {
-    fn from(err: std::str::Utf8Error) -> Error {
+impl From<std::string::FromUtf8Error> for Error {
+    fn from(err: std::string::FromUtf8Error) -> Error {
         Error::GenericError(err.to_string())
     }
 }
