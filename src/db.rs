@@ -2,7 +2,7 @@ use std::{
     fs::File,
     io::{Read, Seek, SeekFrom},
     net::{Ipv4Addr, Ipv6Addr},
-    path::Path,
+    path::{Path, PathBuf},
     result::Result,
     str::FromStr,
 };
@@ -12,8 +12,13 @@ use memmap::Mmap;
 use crate::{consts, error, record};
 
 #[derive(Debug)]
+struct UnopenedDB {
+    path: PathBuf,
+}
+
+#[derive(Debug)]
 pub struct DB {
-    path: String,
+    path: PathBuf,
     db_type: u8,
     db_column: u8,
     db_year: u8,
@@ -25,19 +30,61 @@ pub struct DB {
     ipv6_db_addr: u32,
     ipv4_index_base_addr: u32,
     ipv6_index_base_addr: u32,
-    file: Option<File>,
-    mmap: Option<Mmap>,
+    source: Source,
 }
 
-impl Drop for DB {
-    fn drop(&mut self) {
-        // The 'file' field will be dropped automatically by Rust.
-        match &mut self.mmap {
-            Some(mmap) => {
-                drop(mmap);
-                self.mmap = None;
+#[derive(Debug)]
+enum Source {
+    File(File),
+    Mmap(Mmap),
+}
+
+impl UnopenedDB {
+    pub fn new<P: AsRef<Path>>(path: P) -> Self {
+        UnopenedDB {
+            path: path.as_ref().to_path_buf(),
+        }
+    }
+
+    /// Consume the unopened db and open the file.
+    fn open(self) -> Result<DB, error::Error> {
+        match File::open(&self.path) {
+            Ok(f) => {
+                let db = DB::new(self, Source::File(f));
+                Ok(db)
             }
-            None => {}
+            Err(e) => {
+                Err(error::Error::IoError(format!(
+                    "Error opening DB file: {}",
+                    e
+                )))
+            }
+        }
+    }
+
+    /// Consume the unopened db and mmap the file.
+    fn mmap(self) -> Result<DB, error::Error> {
+        match File::open(&self.path) {
+            Ok(f) => {
+                match unsafe { Mmap::map(&f) } {
+                    Ok(mmap) => {
+                        let db = DB::new(self, Source::Mmap(mmap));
+                        Ok(db)
+                    }
+                    Err(e) => {
+                        Err(error::Error::IoError(format!(
+                            "error while mmaping db file: {}",
+                            e
+                        )))
+                    }
+                }
+            }
+            Err(e) => {
+                Err(error::Error::IoError(format!(
+                    "Error opening DB file: {}",
+                    e
+                )))
+            }
         }
     }
 }
@@ -53,11 +100,10 @@ impl DB {
         //!
         //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
         //!```
-        let mut obj = Self::empty();
-        obj.path = path.as_ref().to_string_lossy().into();
-        obj.open()?;
-        obj.read_header()?;
-        Ok(obj)
+        let obj = UnopenedDB::new(path);
+        let mut db = obj.open()?;
+        db.read_header()?;
+        Ok(db)
     }
 
     pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<Self, error::Error> {
@@ -71,11 +117,10 @@ impl DB {
         //!
         //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
         //!```
-        let mut obj = Self::empty();
-        obj.path = path.as_ref().to_string_lossy().into();
-        obj.mmap()?;
-        obj.read_header()?;
-        Ok(obj)
+        let obj = UnopenedDB::new(path);
+        let mut db = obj.mmap()?;
+        db.read_header()?;
+        Ok(db)
     }
 
     pub fn print_db_info(&self) {
@@ -89,7 +134,7 @@ impl DB {
         //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
         //! db.print_db_info();
         //! ```
-        println!("Db Path: {}", self.path);
+        println!("Db Path: {}", self.path.display());
         println!(" |- Db Type: {}", self.db_type);
         println!(" |- Db Column: {}", self.db_column);
         println!(
@@ -132,9 +177,9 @@ impl DB {
         Err(error::Error::InvalidIP("ip address is invalid".into()))
     }
 
-    fn empty() -> Self {
+    fn new(db: UnopenedDB, source: Source) -> Self {
         Self {
-            path: "".into(),
+            path: db.path,
             db_type: 0,
             db_column: 0,
             db_year: 0,
@@ -146,49 +191,8 @@ impl DB {
             ipv6_db_addr: 0,
             ipv4_index_base_addr: 0,
             ipv6_index_base_addr: 0,
-            file: None,
-            mmap: None,
+            source,
         }
-    }
-
-    fn open(&mut self) -> Result<(), error::Error> {
-        match File::open(self.path.clone()) {
-            Ok(f) => {
-                self.file = Some(f);
-                return Ok(());
-            }
-            Err(e) => {
-                return Err(error::Error::IoError(format!(
-                    "Error opening DB file: {}",
-                    e
-                )))
-            }
-        };
-    }
-
-    fn mmap(&mut self) -> Result<(), error::Error> {
-        match File::open(self.path.clone()) {
-            Ok(f) => {
-                match unsafe { Mmap::map(&f) } {
-                    Ok(mmap) => {
-                        self.mmap = Some(mmap);
-                        return Ok(());
-                    }
-                    Err(e) => {
-                        return Err(error::Error::IoError(format!(
-                            "error while mmaping db file: {}",
-                            e
-                        )))
-                    }
-                };
-            }
-            Err(e) => {
-                return Err(error::Error::IoError(format!(
-                    "Error opening DB file: {}",
-                    e
-                )))
-            }
-        };
     }
 
     fn read_header(&mut self) -> Result<(), error::Error> {
@@ -410,84 +414,79 @@ impl DB {
     }
 
     fn read_u8(&mut self, offset: u64) -> Result<u8, error::Error> {
-        if self.file.is_some() {
-            let mut f = self.file.as_ref().unwrap();
-            f.seek(SeekFrom::Start(offset - 1))?;
-            let mut buf = [0_u8; 1];
-            f.read(&mut buf)?;
-            Ok(buf[0])
-        } else if self.mmap.is_some() {
-            let m = self.mmap.as_ref().unwrap();
-            Ok(m[(offset - 1) as usize])
-        } else {
-            Err(error::Error::InvalidState("db is not open".into()))
+        match &mut self.source {
+            Source::File(f) => {
+                f.seek(SeekFrom::Start(offset - 1))?;
+                let mut buf = [0_u8; 1];
+                f.read(&mut buf)?;
+                Ok(buf[0])
+            }
+            Source::Mmap(m) => {
+                Ok(m[(offset - 1) as usize])
+            }
         }
     }
 
     fn read_u32(&mut self, offset: u64) -> Result<u32, error::Error> {
-        if self.file.is_some() {
-            let mut f = self.file.as_ref().unwrap();
-            f.seek(SeekFrom::Start(offset - 1))?;
-            let mut buf = [0_u8; 4];
-            f.read(&mut buf)?;
-            let result = u32::from_ne_bytes(buf);
-            Ok(result)
-        } else if self.mmap.is_some() {
-            let m = self.mmap.as_ref().unwrap();
-            let mut buf = [0_u8; 4];
-            buf[0] = m[(offset - 1) as usize];
-            buf[1] = m[offset as usize];
-            buf[2] = m[(offset + 1) as usize];
-            buf[3] = m[(offset + 2) as usize];
-            let result = u32::from_ne_bytes(buf);
-            Ok(result)
-        } else {
-            Err(error::Error::InvalidState("db is not open".into()))
+        match &mut self.source {
+            Source::File(f) => {
+                f.seek(SeekFrom::Start(offset - 1))?;
+                let mut buf = [0_u8; 4];
+                f.read(&mut buf)?;
+                let result = u32::from_ne_bytes(buf);
+                Ok(result)
+            }
+            Source::Mmap(m) => {
+                let mut buf = [0_u8; 4];
+                buf[0] = m[(offset - 1) as usize];
+                buf[1] = m[offset as usize];
+                buf[2] = m[(offset + 1) as usize];
+                buf[3] = m[(offset + 2) as usize];
+                let result = u32::from_ne_bytes(buf);
+                Ok(result)
+            }
         }
     }
 
     fn read_f32(&mut self, offset: u64) -> Result<f32, error::Error> {
-        if self.file.is_some() {
-            let mut f = self.file.as_ref().unwrap();
-            f.seek(SeekFrom::Start(offset - 1))?;
-            let mut buf = [0_u8; 4];
-            f.read(&mut buf)?;
-            let result = f32::from_ne_bytes(buf);
-            Ok(result)
-        } else if self.mmap.is_some() {
-            let m = self.mmap.as_ref().unwrap();
-            let mut buf = [0_u8; 4];
-            buf[0] = m[(offset - 1) as usize];
-            buf[1] = m[offset as usize];
-            buf[2] = m[(offset + 1) as usize];
-            buf[3] = m[(offset + 2) as usize];
-            let result = f32::from_ne_bytes(buf);
-            Ok(result)
-        } else {
-            Err(error::Error::InvalidState("db is not open".into()))
+        match &mut self.source {
+            Source::File(f) => {
+                f.seek(SeekFrom::Start(offset - 1))?;
+                let mut buf = [0_u8; 4];
+                f.read(&mut buf)?;
+                let result = f32::from_ne_bytes(buf);
+                Ok(result)
+            }
+            Source::Mmap(m) => {
+                let mut buf = [0_u8; 4];
+                buf[0] = m[(offset - 1) as usize];
+                buf[1] = m[offset as usize];
+                buf[2] = m[(offset + 1) as usize];
+                buf[3] = m[(offset + 2) as usize];
+                let result = f32::from_ne_bytes(buf);
+                Ok(result)
+            }
         }
     }
 
     fn read_str(&mut self, offset: u64) -> Result<String, error::Error> {
-        if self.file.is_some() {
-            let len = self.read_u8(offset + 1)? as usize;
-            let mut f = self.file.as_ref().unwrap();
-            f.seek(SeekFrom::Start(offset + 1))?;
-            let mut buf = vec![0_u8; len];
-            f.read(&mut buf)?;
-            let s = std::str::from_utf8(&buf)?;
-            Ok(s.into())
-        } else if self.mmap.is_some() {
-            let len = self.read_u8(offset + 1)? as usize;
-            let m = self.mmap.as_ref().unwrap();
-            let mut buf = vec![0_u8; len];
-            for i in 0..len {
-                buf[i] = m[(offset + 1) as usize + i];
+        let len = self.read_u8(offset + 1)? as usize;
+        match &mut self.source {
+            Source::File(f) => {
+                f.seek(SeekFrom::Start(offset + 1))?;
+                let mut buf = vec![0_u8; len];
+                f.read(&mut buf)?;
+                let s = std::str::from_utf8(&buf)?;
+                Ok(s.into())
             }
-            let s = std::str::from_utf8(&buf)?;
-            Ok(s.into())
-        } else {
-            Err(error::Error::InvalidState("db is not open".into()))
+            Source::Mmap(m) => {
+                let mut buf = vec![0_u8; len];
+                for i in 0..len {
+                    buf[i] = m[(offset + 1) as usize + i];
+                }
+                let s = std::str::from_utf8(&buf)?;
+                Ok(s.into())
+            }
         }
     }
 
