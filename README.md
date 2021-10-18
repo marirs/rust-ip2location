@@ -75,7 +75,7 @@ Ok(
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-ip2location = "0.1.3"
+ip2location = "0.1.4"
 ```
 
 ### License
