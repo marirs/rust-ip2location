@@ -27,7 +27,7 @@ fn main() -> Result<(), String> {
     println!();
 
     // print the IP information
-    match db.ip_lookup(&*ip.to_string()) {
+    match db.ip_lookup(ip) {
         Ok(record) => println!("{:#?}", record),
         Err(e) => println!("{:?}", e),
     };

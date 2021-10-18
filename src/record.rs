@@ -1,3 +1,5 @@
+use std::net::{IpAddr, Ipv6Addr};
+
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
@@ -8,9 +10,9 @@ pub struct Country {
 }
 
 #[skip_serializing_none]
-#[derive(PartialEq, Debug, Default, Clone, Serialize)]
+#[derive(PartialEq, Debug, Clone, Serialize)]
 pub struct Record {
-    pub ip: String,
+    pub ip: IpAddr,
     pub latitude: Option<f32>,
     pub longitude: Option<f32>,
     pub country: Option<Country>,
@@ -35,5 +37,32 @@ pub struct Record {
 impl Record {
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
+    }
+}
+
+impl Default for Record {
+    fn default() -> Self {
+        Record {
+            ip: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
+            latitude: None,
+            longitude: None,
+            country: None,
+            region: None,
+            city: None,
+            isp: None,
+            domain: None,
+            zip_code: None,
+            time_zone: None,
+            net_speed: None,
+            idd_code: None,
+            area_code: None,
+            weather_station_code: None,
+            weather_station_name: None,
+            mcc: None,
+            mnc: None,
+            mobile_brand: None,
+            elevation: None,
+            usage_type: None
+        }
     }
 }
