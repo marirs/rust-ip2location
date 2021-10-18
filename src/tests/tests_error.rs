@@ -29,9 +29,4 @@ fn test_error_display() {
         ),
         "InvalidIP: ip address is invalid".to_string()
     );
-
-    assert_eq!(
-        format!("{:?}", Error::InvalidState("invalid state".to_string())),
-        "InvalidState: invalid state".to_string()
-    );
 }
