@@ -33,12 +33,6 @@ Db Path: data/IP2LOCATION-LITE-DB1.IPV6.BIN
  |- Db Type: 1
  |- Db Column: 2
  |- Db Date (YY/MM/DD): 20/12/28
- |- IPv4 Count: 188687
- |- IPv4 Address: 1048641
- |- IPv4 Index Base Address: 65
- |- IPv6 Count: 138876
- |- IPv6 Address: 2558137
- |- IPv6 Index Base Address: 524353
 
 Ok(
     Record {
@@ -67,6 +61,8 @@ Ok(
         mobile_brand: None,
         elevation: None,
         usage_type: None,
+        address_type: None,
+        category: None,
     },
 )
 ```
@@ -75,7 +71,7 @@ Ok(
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-ip2location = "0.1.5"
+ip2location = "0.2.0"
 ```
 
 ### License

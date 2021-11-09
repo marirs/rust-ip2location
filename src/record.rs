@@ -32,6 +32,8 @@ pub struct Record {
     pub mobile_brand: Option<String>,
     pub elevation: Option<String>,
     pub usage_type: Option<String>,
+    pub address_type: Option<String>,
+    pub category: Option<String>,
 }
 
 impl Record {
@@ -62,7 +64,9 @@ impl Default for Record {
             mnc: None,
             mobile_brand: None,
             elevation: None,
-            usage_type: None
+            usage_type: None,
+            address_type: None,
+            category: None
         }
     }
 }

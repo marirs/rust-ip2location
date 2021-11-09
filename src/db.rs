@@ -141,12 +141,6 @@ impl DB {
             " |- Db Date (YY/MM/DD): {}/{}/{}",
             self.db_year, self.db_month, self.db_day
         );
-        println!(" |- IPv4 Count: {}", self.ipv4_db_count);
-        println!(" |- IPv4 Address: {}", self.ipv4_db_addr);
-        println!(" |- IPv4 Index Base Address: {}", self.ipv4_index_base_addr);
-        println!(" |- IPv6 Count: {}", self.ipv6_db_count);
-        println!(" |- IPv6 Address: {}", self.ipv6_db_addr);
-        println!(" |- IPv6 Index Base Address: {}", self.ipv6_index_base_addr);
     }
 
     pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<record::Record, error::Error> {
@@ -170,9 +164,25 @@ impl DB {
                 return Ok(record);
             }
             IpAddr::V6(ipv6) => {
-                let mut record = self.ipv6_lookup(ipv6)?;
-                record.ip = ip.into();
-                return Ok(record);
+                if let Some(converted_ip) = ipv6.to_ipv4() {
+                    let mut record = self.ipv4_lookup(u32::from(converted_ip))?;
+                    record.ip = ip.into();
+                    return Ok(record);
+                } else if Ipv6Addr::from(consts::FROM_6TO4) <= ipv6 && ipv6 <= Ipv6Addr::from(consts::TO_6TO4) {
+                    let ipnum = (u128::from(ipv6) >> 80) as u32;
+                    let mut record = self.ipv4_lookup(ipnum)?;
+                    record.ip = ip.into();
+                    return Ok(record);
+                } else if Ipv6Addr::from(consts::FROM_TEREDO) <= ipv6 && ipv6 <= Ipv6Addr::from(consts::TO_TEREDO) {
+                    let ipnum = !u128::from(ipv6) as u32;
+                    let mut record = self.ipv4_lookup(ipnum)?;
+                    record.ip = ip.into();
+                    return Ok(record);
+                } else {
+                    let mut record = self.ipv6_lookup(ipv6)?;
+                    record.ip = ip.into();
+                    return Ok(record);
+                }
             }
         }
     }
@@ -408,6 +418,20 @@ impl DB {
                 (row_addr + 4 * (consts::USAGETYPE_POSITION[self.db_type as usize] - 1)).into(),
             )?;
             result.usage_type = Some(self.read_str(index.into())?);
+        }
+
+        if consts::ADDRESSTYPE_POSITION[self.db_type as usize] > 0 {
+            let index = self.read_u32(
+                (row_addr + 4 * (consts::ADDRESSTYPE_POSITION[self.db_type as usize] - 1)).into(),
+            )?;
+            result.address_type = Some(self.read_str(index.into())?);
+        }
+
+        if consts::CATEGORY_POSITION[self.db_type as usize] > 0 {
+            let index = self.read_u32(
+                (row_addr + 4 * (consts::CATEGORY_POSITION[self.db_type as usize] - 1)).into(),
+            )?;
+            result.category = Some(self.read_str(index.into())?);
         }
 
         Ok(result)

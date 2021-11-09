@@ -1,6 +1,6 @@
 [package]
 name = "ip2location"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["MARIRS <marirs@gmail.com>"]
 description = "Find geo based on the given IP"
 keywords = ["ip2location", "geoip", "geolocation", "ip"]
