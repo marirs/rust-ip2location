@@ -206,12 +206,10 @@ impl ProxyDB {
                 .read_u32(mem_offset as u64 + column_offset as u64)?;
             if ip_number >= ip_from && ip_number < ip_to {
                 return self.read_record(mem_offset + 4);
+            } else if ip_number < ip_from {
+                high = mid - 1;
             } else {
-                if ip_number < ip_from {
-                    high = mid - 1;
-                } else {
-                    low = mid + 1;
-                }
+                low = mid + 1;
             }
         }
         Err(Error::RecordNotFound)
@@ -251,12 +249,10 @@ impl ProxyDB {
                 .read_ipv6((mem_offset + column_offset as u32) as u64)?;
             if ip_address > ip_from && ip_address < ip_to {
                 return self.read_record(mem_offset + 16);
+            } else if ip_address < ip_from {
+                high = mid - 1;
             } else {
-                if ip_address < ip_from {
-                    high = mid - 1;
-                } else {
-                    low = mid + 1;
-                }
+                low = mid + 1;
             }
         }
         Err(Error::RecordNotFound)
@@ -295,70 +291,70 @@ impl ProxyDB {
             });
         }
         if REGION_POSITION[db_type] != 0 && record.region.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (REGION_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.region = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (REGION_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.region = Some(self.source.read_str(index as u64)?);
         }
         if CITY_POSITION[db_type] != 0 && record.city.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (CITY_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.city = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (CITY_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.city = Some(self.source.read_str(index as u64)?);
         }
         if ISP_POSITION[db_type] != 0 && record.isp.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (ISP_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.isp = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (ISP_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.isp = Some(self.source.read_str(index as u64)?);
         }
         if PROXY_TYPE_POSITION[db_type] != 0 && record.proxy_type.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (PROXY_TYPE_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.proxy_type = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (PROXY_TYPE_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.proxy_type = Some(self.source.read_str(index as u64)?);
         }
         if DOMAIN_POSITION[db_type] != 0 && record.domain.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (DOMAIN_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.domain = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (DOMAIN_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.domain = Some(self.source.read_str(index as u64)?);
         }
         if USAGE_TYPE_POSITION[db_type] != 0 && record.usage_type.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (USAGE_TYPE_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.usage_type = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (USAGE_TYPE_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.usage_type = Some(self.source.read_str(index as u64)?);
         }
         if ASN_POSITION[db_type] != 0 && record.asn.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (ASN_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.asn = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (ASN_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.asn = Some(self.source.read_str(index as u64)?);
         }
         if AS_POSITION[db_type] != 0 && record.as_.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (AS_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.as_ = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (AS_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.as_ = Some(self.source.read_str(index as u64)?);
         }
         if LAST_SEEN_POSITION[db_type] != 0 && record.last_seen.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (LAST_SEEN_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.last_seen = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (LAST_SEEN_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.last_seen = Some(self.source.read_str(index as u64)?);
         }
         if THREAT_POSITION[db_type] != 0 && record.threat.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (THREAT_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.threat = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (THREAT_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.threat = Some(self.source.read_str(index as u64)?);
         }
         if PROVIDER_POSITION[db_type] != 0 && record.provider.is_none() {
-                let index = self
-                    .source
-                    .read_u32(4 * (PROVIDER_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                record.provider = Some(self.source.read_str(index as u64)?);
+            let index = self
+                .source
+                .read_u32(4 * (PROVIDER_POSITION[db_type] - 2) as u64 + offset as u64)?;
+            record.provider = Some(self.source.read_str(index as u64)?);
         }
 
         Ok(record)
