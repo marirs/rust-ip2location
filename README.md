@@ -1,7 +1,13 @@
 # IP2Location & IP2Proxy
 
 [![Crates.io](https://img.shields.io/crates/v/ip2location)](https://crates.io/crates/ip2location)
-[![Documentation](https://docs.rs/ip2location/badge.svg)](https://docs.rs/ip2location/0.1.0/ip2location/struct.DB.html)
+[![Documentation](https://docs.rs/ip2location/badge.svg)](https://docs.rs/ip2location/0.3.0/ip2location/struct.DB.html)
+
+[![Linux Arm7](https://github.com/marirs/rust-ip2location/actions/workflows/linux_arm.yml/badge.svg)](https://github.com/marirs/rust-ip2location/actions/workflows/linux_arm.yml)
+[![Linux x86_64](https://github.com/marirs/rust-ip2location/actions/workflows/linux_x86_64.yml/badge.svg)](https://github.com/marirs/rust-ip2location/actions/workflows/linux_x86_64.yml)
+[![macOS x86_64](https://github.com/marirs/rust-ip2location/actions/workflows/macos.yml/badge.svg)](https://github.com/marirs/rust-ip2location/actions/workflows/macos.yml)
+[![Windows x86_64](https://github.com/marirs/rust-ip2location/actions/workflows/windows.yml/badge.svg)](https://github.com/marirs/rust-ip2location/actions/workflows/windows.yml)
+
 
 This library reads the IP2Location DB format for both IP2Location and IP2Proxy and returns geo information for the given IP.
 
@@ -76,52 +82,52 @@ Db Path: data/sample.bin.px11/IP2PROXY-IP-PROXYTYPE-COUNTRY-REGION-CITY-ISP-DOMA
  |- Db Date (YY/MM/DD): 21/5/28
 
 ProxyDb(
-    Record {
-        ip: 194.59.249.19,
+    ProxyRecord {
+        ip: 1.1.1.1,
         country: Some(
             Country {
-                short_name: "FR",
-                long_name: "France",
+                short_name: "US",
+                long_name: "United States of America",
             },
         ),
         region: Some(
-            "Ile-de-France",
+            "California",
         ),
         city: Some(
-            "Paris",
+            "Los Angeles",
         ),
         isp: Some(
-            "M247 Europe SRL",
+            "APNIC and CloudFlare DNS Resolver Project",
         ),
         domain: Some(
-            "m247.com",
+            "cloudflare.com",
         ),
         is_proxy: Some(
             IsAProxy,
         ),
         proxy_type: Some(
-            "FR",
+            "US",
         ),
         asn: Some(
-            "9009",
+            "13335",
         ),
         as_: Some(
-            "M247 Ltd",
+            "CloudFlare Inc",
         ),
         last_seen: Some(
-            "1",
+            "27",
         ),
         threat: Some(
-            "SPAM",
+            "-",
         ),
         provider: Some(
-            "ProtonVPN",
+            "-",
         ),
         usage_type: Some(
-            "DCH",
+            "CDN",
         ),
     },
-) 
+)
 ```
 ---
 ### Usage
