@@ -1,7 +1,8 @@
-use std::net::{IpAddr, Ipv6Addr};
+#![allow(clippy::enum_variant_names, clippy::derive_partial_eq_without_eq)]
 
 use serde::Serialize;
 use serde_with::skip_serializing_none;
+use std::net::{IpAddr, Ipv6Addr};
 
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub struct Country {

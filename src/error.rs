@@ -1,6 +1,6 @@
 use std::{fmt, io};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum Error {
     GenericError(String),
     IoError(String),

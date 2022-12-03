@@ -1,5 +1,3 @@
-use memmap::Mmap;
-
 use crate::{
     common::{Source, FROM_6TO4, FROM_TEREDO, TO_6TO4, TO_TEREDO},
     error::Error,
@@ -8,6 +6,7 @@ use crate::{
         record::{Country, Proxy, ProxyRecord},
     },
 };
+use memmap::Mmap;
 use std::{
     fs::File,
     net::{IpAddr, Ipv6Addr},
