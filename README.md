@@ -147,8 +147,8 @@ ip2location = "0.2.0"
 This is free software, licensed under the MIT license.
 
 ### Ip2Location Databases:
-- [Free](https://lite.ip2location.com/)
-- [Commercial](https://ip2location.com/database/ip2location)
+- Lite free version: [Free](https://lite.ip2location.com/)
+- Ip2Location / Ip2Proxy: [Commercial](https://ip2location.com/database/)
 
 ---
 Sriram
