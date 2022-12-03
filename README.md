@@ -135,13 +135,6 @@ ProxyDb(
     },
 )
 ```
----
-### Usage
-Add this to your `Cargo.toml`:
-```toml
-[dependencies]
-ip2location = "0.2.0"
-```
 
 ### License
 This is free software, licensed under the MIT license.
