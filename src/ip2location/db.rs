@@ -137,21 +137,21 @@ impl LocationDB {
             IpAddr::V6(ipv6) => {
                 if let Some(converted_ip) = ipv6.to_ipv4() {
                     let mut record = self.ipv4_lookup(u32::from(converted_ip))?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     return Ok(record);
                 } else if Ipv6Addr::from(FROM_6TO4) <= ipv6 && ipv6 <= Ipv6Addr::from(TO_6TO4) {
                     let ipnum = (u128::from(ipv6) >> 80) as u32;
                     let mut record = self.ipv4_lookup(ipnum)?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     return Ok(record);
                 } else if Ipv6Addr::from(FROM_TEREDO) <= ipv6 && ipv6 <= Ipv6Addr::from(TO_TEREDO) {
                     let ipnum = !u128::from(ipv6) as u32;
                     let mut record = self.ipv4_lookup(ipnum)?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     return Ok(record);
                 } else {
                     let mut record = self.ipv6_lookup(ipv6)?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     return Ok(record);
                 }
             }
