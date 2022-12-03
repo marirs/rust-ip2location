@@ -1,7 +1,7 @@
 # IP2Location & IP2Proxy
 
 [![Crates.io](https://img.shields.io/crates/v/ip2location)](https://crates.io/crates/ip2location)
-[![Documentation](https://docs.rs/ip2location/badge.svg)](https://docs.rs/ip2location/0.3.0/ip2location/struct.DB.html)
+[![Documentation](https://docs.rs/ip2location/badge.svg)](https://docs.rs/ip2location/)
 
 [![Linux Arm7](https://github.com/marirs/rust-ip2location/actions/workflows/linux_arm.yml/badge.svg)](https://github.com/marirs/rust-ip2location/actions/workflows/linux_arm.yml)
 [![Linux x86_64](https://github.com/marirs/rust-ip2location/actions/workflows/linux_x86_64.yml/badge.svg)](https://github.com/marirs/rust-ip2location/actions/workflows/linux_x86_64.yml)
