@@ -29,6 +29,12 @@ cargo b --release
 cargo t -v
 ```
 
+### Usage
+```toml
+[dependencies]
+ip2location = "0.3.1"
+```
+
 ### Executing the Example
 ```bash
 cargo b --example
