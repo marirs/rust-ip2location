@@ -1,7 +1,7 @@
 use crate::{
     error::Error,
-    ip2location::{db::LocationDB, record::Record as LdbRecord},
-    ip2proxy::{db::ProxyDB, record::Record as PdbRecord},
+    ip2location::{db::LocationDB, record::LocationRecord},
+    ip2proxy::{db::ProxyDB, record::ProxyRecord},
 };
 use memmap::Mmap;
 use std::{
@@ -25,8 +25,8 @@ pub enum DB {
 
 #[derive(Debug)]
 pub enum Record {
-    LocationDb(LdbRecord),
-    ProxyDb(PdbRecord),
+    LocationDb(LocationRecord),
+    ProxyDb(ProxyRecord),
 }
 
 #[derive(Debug)]
@@ -139,6 +139,21 @@ impl Source {
 impl DB {
     /// Consume the unopened db and open the file.
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<DB, Error> {
+        //! Loads a Ip2Location/Ip2Proxy Database .bin file from path
+        //!
+        //! ## Example usage
+        //!
+        //!```rust
+        //! use ip2location::LocationDB;
+        //!
+        //! let mut db = LocationDB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //!```
+        if !path.as_ref().exists() {
+            return Err(Error::IoError(
+                "Error opening DB file: No such file or directory".to_string(),
+            ));
+        }
+
         if let Ok(location_db) = LocationDB::from_file(&path) {
             Ok(DB::LocationDb(location_db))
         } else if let Ok(proxy_db) = ProxyDB::from_file(&path) {
@@ -150,6 +165,16 @@ impl DB {
 
     /// Consume the unopened db and mmap the file.
     pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<DB, Error> {
+        //! Loads a Ip2Location/Ip2Proxy Database .bin file from path using
+        //! mmap (memap) feature.
+        //!
+        //! ## Example usage
+        //!
+        //!```rust
+        //! use ip2location::DB;
+        //!
+        //! let mut db = DB::from_file_mmap("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
+        //!```
         if let Ok(location_db) = LocationDB::from_file_mmap(&path) {
             Ok(DB::LocationDb(location_db))
         } else if let Ok(proxy_db) = ProxyDB::from_file_mmap(&path) {
@@ -160,6 +185,16 @@ impl DB {
     }
 
     pub fn print_db_info(&self) {
+        //! Prints the DB Information of Ip2Location/Ip2Proxy to console
+        //!
+        //! ## Example usage
+        //!
+        //! ```rust
+        //! use ip2location::DB;
+        //!
+        //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! db.print_db_info();
+        //! ```
         match self {
             Self::LocationDb(db) => db.print_db_info(),
             Self::ProxyDb(db) => db.print_db_info(),
@@ -167,6 +202,24 @@ impl DB {
     }
 
     pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<Record, Error> {
+        //! Lookup for the given IPv4 or IPv6 and returns the
+        //! Geo information or Proxy Information
+        //!
+        //! ## Example usage
+        //!
+        //!```rust
+        //! use ip2location::{DB, Record};
+        //!
+        //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.IPV6.BIN").unwrap();
+        //! let geo_info = db.ip_lookup("2a01:cb08:8d14::".parse().unwrap()).unwrap();
+        //! println!("{:#?}", geo_info);
+        //! let record = if let Record::LocationDb(rec) = geo_info {
+        //!   Some(rec)
+        //! } else { None };
+        //! let geo_info = record.unwrap();
+        //! assert!(!geo_info.country.is_none());
+        //! assert_eq!(geo_info.country.unwrap().short_name, "FR")
+        //!```
         match self {
             Self::LocationDb(db) => Ok(Record::LocationDb(db.ip_lookup(ip)?)),
             Self::ProxyDb(db) => Ok(Record::ProxyDb(db.ip_lookup(ip)?)),

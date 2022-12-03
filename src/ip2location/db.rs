@@ -5,7 +5,7 @@ use crate::{
     error::Error,
     ip2location::{
         consts::*,
-        record::{self, Record},
+        record::{self, LocationRecord},
     },
 };
 use std::{
@@ -62,7 +62,7 @@ impl LocationDB {
         //!
         //! ## Example usage
         //!
-        //!```
+        //!```rust
         //! use ip2location::LocationDB;
         //!
         //! let mut db = LocationDB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
@@ -79,7 +79,7 @@ impl LocationDB {
         //!
         //! ## Example usage
         //!
-        //!```
+        //!```rust
         //! use ip2location::DB;
         //!
         //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
@@ -96,7 +96,7 @@ impl LocationDB {
         //!
         //! ## Example usage
         //!
-        //! ```
+        //! ```rust
         //! use ip2location::DB;
         //!
         //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
@@ -111,17 +111,21 @@ impl LocationDB {
         );
     }
 
-    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<Record, Error> {
+    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<LocationRecord, Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the Geo information
         //!
         //! ## Example usage
         //!
-        //!```
-        //! use ip2location::DB;
+        //!```rust
+        //! use ip2location::{DB, Record};
         //!
         //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.IPV6.BIN").unwrap();
         //! let geo_info = db.ip_lookup("2a01:cb08:8d14::".parse().unwrap()).unwrap();
         //! println!("{:#?}", geo_info);
+        //! let record = if let Record::LocationDb(rec) = geo_info {
+        //!   Some(rec)
+        //! } else { None };
+        //! let geo_info = record.unwrap();
         //! assert!(!geo_info.country.is_none());
         //! assert_eq!(geo_info.country.unwrap().short_name, "FR")
         //!```
@@ -182,7 +186,7 @@ impl LocationDB {
         }
     }
 
-    fn ipv4_lookup(&mut self, mut ip_number: u32) -> Result<Record, Error> {
+    fn ipv4_lookup(&mut self, mut ip_number: u32) -> Result<LocationRecord, Error> {
         if ip_number == u32::MAX {
             ip_number -= 1;
         }
@@ -212,7 +216,7 @@ impl LocationDB {
         Err(Error::RecordNotFound)
     }
 
-    fn ipv6_lookup(&mut self, ipv6: Ipv6Addr) -> Result<Record, Error> {
+    fn ipv6_lookup(&mut self, ipv6: Ipv6Addr) -> Result<LocationRecord, Error> {
         let mut low = 0;
         let mut high = self.ipv6_db_count;
         if self.ipv6_index_base_addr > 0 {
@@ -242,8 +246,8 @@ impl LocationDB {
         Err(Error::RecordNotFound)
     }
 
-    fn read_record(&mut self, row_addr: u32) -> Result<Record, Error> {
-        let mut result = record::Record::default();
+    fn read_record(&mut self, row_addr: u32) -> Result<LocationRecord, Error> {
+        let mut result = record::LocationRecord::default();
 
         if COUNTRY_POSITION[self.db_type as usize] > 0 {
             let index = self

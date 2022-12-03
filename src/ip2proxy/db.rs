@@ -5,7 +5,7 @@ use crate::{
     error::Error,
     ip2proxy::{
         consts::*,
-        record::{Country, Proxy, Record},
+        record::{Country, Proxy, ProxyRecord},
     },
 };
 use std::{
@@ -61,10 +61,10 @@ impl ProxyDB {
         //!
         //! ## Example usage
         //!
-        //!```
-        //! use ip2location::ProxyDB;
+        //!```rust
+        //! use ip2location::DB;
         //!
-        //! let mut db = ::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! let mut db = DB::from_file("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
         //!```
         let db = File::open(&path)?;
         let mut ss = Self::new(Source::File(path.as_ref().to_path_buf(), db));
@@ -73,15 +73,15 @@ impl ProxyDB {
     }
 
     pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        //! Loads a Ip2Location Database .bin file from path using
+        //! Loads a Ip2Proxy Database .bin file from path using
         //! mmap (memap) feature.
         //!
         //! ## Example usage
         //!
-        //!```
+        //!```rust
         //! use ip2location::DB;
         //!
-        //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! let mut db = DB::from_file_mmap("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
         //!```
         let db = File::open(&path)?;
         let mm = unsafe { Mmap::map(&db) }?;
@@ -90,7 +90,23 @@ impl ProxyDB {
         Ok(ss)
     }
 
-    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<Record, Error> {
+    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<ProxyRecord, Error> {
+        //! Lookup for the given IPv4 or IPv6 and returns the Proxy information
+        //!
+        //! ## Example usage
+        //!
+        //!```rust
+        //! use ip2location::{DB, Record};
+        //!
+        //! let mut db = DB::from_file("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
+        //! let geo_info = db.ip_lookup("1.1.1.1".parse().unwrap()).unwrap();
+        //! println!("{:#?}", geo_info);
+        //! let record = if let Record::ProxyDb(rec) = geo_info {
+        //!   Some(rec)
+        //! } else { None };
+        //! let geo_info = record.unwrap();
+        //! assert!(!geo_info.country.is_none());
+        //!```
         return match ip {
             IpAddr::V4(ipv4) => {
                 let mut record = self.get_ipv4_record(u32::from(ipv4))?;
@@ -121,7 +137,17 @@ impl ProxyDB {
         };
     }
 
-    pub fn read_header(&mut self) -> Result<(), Error> {
+    pub fn print_db_info(&self) {
+        println!("Db Path: {}", self.source);
+        println!(" |- Db Type: {}", self.db_type);
+        println!(" |- Db Column: {}", self.db_column);
+        println!(
+            " |- Db Date (YY/MM/DD): {}/{}/{}",
+            self.db_year, self.db_month, self.db_day
+        );
+    }
+
+    fn read_header(&mut self) -> Result<(), Error> {
         self.db_type = self.source.read_u8(1)?;
         self.db_column = self.source.read_u8(2)?;
         self.db_year = self.source.read_u8(3)?;
@@ -148,7 +174,7 @@ impl ProxyDB {
         }
     }
 
-    pub fn get_ipv4_record(&mut self, mut ip_number: u32) -> Result<Record, Error> {
+    fn get_ipv4_record(&mut self, mut ip_number: u32) -> Result<ProxyRecord, Error> {
         let mut ip_from: u32;
         let mut ip_to: u32;
         if ip_number == MAX_IPV4_RANGE {
@@ -192,7 +218,7 @@ impl ProxyDB {
         Err(Error::RecordNotFound)
     }
 
-    pub fn get_ipv6_record(&mut self, ip_address: Ipv6Addr) -> Result<Record, Error> {
+    fn get_ipv6_record(&mut self, ip_address: Ipv6Addr) -> Result<ProxyRecord, Error> {
         let base_address = self.ipv6_db_addr;
         let database_column = self.db_column;
         let ipv6_index_base_address = self.ipv4_index_base_addr;
@@ -205,7 +231,7 @@ impl ProxyDB {
         let mut row_offset;
         let mut mem_offset: u32;
         if high <= 0 {
-            return Ok(Record::default());
+            return Ok(ProxyRecord::default());
         }
         if ipv6_index_base_address > 0 {
             let number = (ip_address.octets()[0] as u32 * 256) + ip_address.octets()[1] as u32;
@@ -237,9 +263,9 @@ impl ProxyDB {
         Err(Error::RecordNotFound)
     }
 
-    pub fn read_record(&mut self, offset: u32) -> Result<Record, Error> {
+    fn read_record(&mut self, offset: u32) -> Result<ProxyRecord, Error> {
         let db_type = self.db_type as usize;
-        let mut record = Record::default();
+        let mut record = ProxyRecord::default();
         record.is_proxy = Some(Proxy::IsAnError);
         if COUNTRY_POSITION[db_type] != 0 {
             let index = self
@@ -359,15 +385,5 @@ impl ProxyDB {
         }
 
         Ok(record)
-    }
-
-    pub fn print_db_info(&self) {
-        println!("Db Path: {}", self.source);
-        println!(" |- Db Type: {}", self.db_type);
-        println!(" |- Db Column: {}", self.db_column);
-        println!(
-            " |- Db Date (YY/MM/DD): {}/{}/{}",
-            self.db_year, self.db_month, self.db_day
-        );
     }
 }

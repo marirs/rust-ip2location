@@ -11,7 +11,7 @@ pub struct Country {
 
 #[skip_serializing_none]
 #[derive(PartialEq, Debug, Clone, Serialize)]
-pub struct Record {
+pub struct LocationRecord {
     pub ip: IpAddr,
     pub latitude: Option<f32>,
     pub longitude: Option<f32>,
@@ -36,15 +36,15 @@ pub struct Record {
     pub category: Option<String>,
 }
 
-impl Record {
+impl LocationRecord {
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 }
 
-impl Default for Record {
+impl Default for LocationRecord {
     fn default() -> Self {
-        Record {
+        LocationRecord {
             ip: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             latitude: None,
             longitude: None,

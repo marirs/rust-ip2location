@@ -19,7 +19,7 @@ pub enum Proxy {
 
 #[skip_serializing_none]
 #[derive(PartialEq, Debug, Clone, Serialize)]
-pub struct Record {
+pub struct ProxyRecord {
     pub ip: IpAddr,
     pub country: Option<Country>,
     pub region: Option<String>,
@@ -36,15 +36,15 @@ pub struct Record {
     pub usage_type: Option<String>,
 }
 
-impl Record {
+impl ProxyRecord {
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 }
 
-impl Default for Record {
+impl Default for ProxyRecord {
     fn default() -> Self {
-        Record {
+        ProxyRecord {
             ip: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             country: None,
             region: None,
