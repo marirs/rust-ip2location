@@ -50,7 +50,7 @@ impl Source {
             Source::File(_, f) => {
                 f.seek(SeekFrom::Start(offset - 1))?;
                 let mut buf = [0_u8; 1];
-                f.read(&mut buf)?;
+                f.read_exact(&mut buf)?;
                 Ok(buf[0])
             }
             Source::Mmap(_, m) => Ok(m[(offset - 1) as usize]),
@@ -62,7 +62,7 @@ impl Source {
             Source::File(_, f) => {
                 f.seek(SeekFrom::Start(offset - 1))?;
                 let mut buf = [0_u8; 4];
-                f.read(&mut buf)?;
+                f.read_exact(&mut buf)?;
                 let result = u32::from_ne_bytes(buf);
                 Ok(result)
             }
@@ -83,7 +83,7 @@ impl Source {
             Source::File(_, f) => {
                 f.seek(SeekFrom::Start(offset - 1))?;
                 let mut buf = [0_u8; 4];
-                f.read(&mut buf)?;
+                f.read_exact(&mut buf)?;
                 let result = f32::from_ne_bytes(buf);
                 Ok(result)
             }
@@ -105,7 +105,7 @@ impl Source {
             Source::File(_, f) => {
                 f.seek(SeekFrom::Start(offset + 1))?;
                 let mut buf = vec![0_u8; len];
-                f.read(&mut buf)?;
+                f.read_exact(&mut buf)?;
                 let s = String::from_utf8(buf)?;
                 Ok(s)
             }
