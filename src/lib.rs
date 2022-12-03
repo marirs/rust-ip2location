@@ -1,8 +1,13 @@
-mod consts;
-mod db;
-pub use self::db::DB;
+mod common;
+pub use common::DB;
+
 pub mod error;
-pub mod record;
+
+mod ip2location;
+pub use ip2location::db::LocationDB;
+
+mod ip2proxy;
+pub use ip2proxy::db::ProxyDB;
 
 #[cfg(test)]
 mod tests;

@@ -1,4 +1,3 @@
-// Constants
 pub const COUNTRY_POSITION: [u32; 26] = [
     0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 ];
@@ -62,9 +61,3 @@ pub const ADDRESSTYPE_POSITION: [u32; 26] = [
 pub const CATEGORY_POSITION: [u32; 26] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22,
 ];
-
-// Constants for IPV6 Address
-pub const FROM_6TO4: u128 = 0x2002_0000_0000_0000_0000_0000_0000_0000;
-pub const TO_6TO4: u128 = 0x2002_ffff_ffff_ffff_ffff_ffff_ffff_ffff;
-pub const FROM_TEREDO: u128 = 0x2001_0000_0000_0000_0000_0000_0000_0000;
-pub const TO_TEREDO: u128 = 0x2001_0000_ffff_ffff_ffff_ffff_ffff_ffff;

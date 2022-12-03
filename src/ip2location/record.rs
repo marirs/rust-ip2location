@@ -66,7 +66,7 @@ impl Default for Record {
             elevation: None,
             usage_type: None,
             address_type: None,
-            category: None
+            category: None,
         }
     }
 }

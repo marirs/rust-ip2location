@@ -5,6 +5,8 @@ pub enum Error {
     GenericError(String),
     IoError(String),
     RecordNotFound,
+    UnknownDb,
+    InvalidBinDatabase(u8, u8),
 }
 
 impl From<io::Error> for Error {
@@ -43,6 +45,11 @@ impl fmt::Debug for Error {
             Error::GenericError(msg) => write!(f, "GenericError: {}", msg)?,
             Error::IoError(msg) => write!(f, "IoError: {}", msg)?,
             Error::RecordNotFound => write!(f, "RecordNotFound: no record found")?,
+            Error::UnknownDb => write!(
+                f,
+                "Unknown database: Database type should be Proxy or Location"
+            )?,
+            Error::InvalidBinDatabase(y, p) => write!(f, "Invalid Bin Database: {} {}", y, p)?,
         }
         Ok(())
     }

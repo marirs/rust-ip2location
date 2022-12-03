@@ -1,31 +1,25 @@
 [package]
 name = "ip2location"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["MARIRS <marirs@gmail.com>"]
-description = "Find geo based on the given IP"
-keywords = ["ip2location", "geoip", "geolocation", "ip"]
+description = "Find geo information & proxy information based on the given IP using IP2Location BIN databases"
+keywords = ["ip2location", "geoip", "geolocation", "ip", "proxy"]
 categories = ["database", "network-programming"]
 license-file = "LICENSE"
 exclude = [
     ".gitignore",
-    ".travis.yml",
     "examples",
     "data"
 ]
 repository = "https://github.com/marirs/rust-ip2location"
 homepage = "https://github.com/marirs/rust-ip2location"
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+edition = "2021"
 
 [dependencies]
 memmap = "0.7.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_with = "1.6.0"
-
-[badges]
-travis-ci = { repository = "marirs/rust-ip2location" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_with = "2.1.0"
 
 [profile.dev]
 opt-level = 3
