@@ -161,12 +161,10 @@ impl ProxyDB {
         self.product_code = self.source.read_u8(30)?;
         self.licence_code = self.source.read_u8(31)?;
         self.database_size = self.source.read_u32(32)?;
-        if self.product_code == 2 {
-            Ok(())
-        } else if self.db_year <= 20 && self.product_code == 0 {
+        if (self.db_year <= 20 && self.product_code == 0) || self.product_code == 2 {
             Ok(())
         } else {
-            Err(crate::error::Error::InvalidBinDatabase(
+            Err(Error::InvalidBinDatabase(
                 self.db_year,
                 self.product_code,
             ))
