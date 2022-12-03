@@ -106,7 +106,7 @@ impl ProxyDB {
         //! let geo_info = record.unwrap();
         //! assert!(!geo_info.country.is_none());
         //!```
-        return match ip {
+        match ip {
             IpAddr::V4(ipv4) => {
                 let mut record = self.get_ipv4_record(u32::from(ipv4))?;
                 record.ip = ip;
@@ -115,25 +115,25 @@ impl ProxyDB {
             IpAddr::V6(ipv6) => {
                 if let Some(converted_ip) = ipv6.to_ipv4() {
                     let mut record = self.get_ipv4_record(u32::from(converted_ip))?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     Ok(record)
                 } else if Ipv6Addr::from(FROM_6TO4) <= ipv6 && ipv6 <= Ipv6Addr::from(TO_6TO4) {
                     let ipnum = (u128::from(ipv6) >> 80) as u32;
                     let mut record = self.get_ipv4_record(ipnum)?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     Ok(record)
                 } else if Ipv6Addr::from(FROM_TEREDO) <= ipv6 && ipv6 <= Ipv6Addr::from(TO_TEREDO) {
                     let ipnum = !u128::from(ipv6) as u32;
                     let mut record = self.get_ipv4_record(ipnum)?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     Ok(record)
                 } else {
                     let mut record = self.get_ipv6_record(ipv6)?;
-                    record.ip = ip.into();
+                    record.ip = ip;
                     Ok(record)
                 }
             }
-        };
+        }
     }
 
     pub fn print_db_info(&self) {
@@ -177,7 +177,7 @@ impl ProxyDB {
         let mut ip_from: u32;
         let mut ip_to: u32;
         if ip_number == MAX_IPV4_RANGE {
-            ip_number = ip_number - 1;
+            ip_number -= 1;
         }
         let base_address = self.ipv4_db_addr;
         let database_column = self.db_column;
@@ -205,7 +205,7 @@ impl ProxyDB {
                 .source
                 .read_u32(mem_offset as u64 + column_offset as u64)?;
             if ip_number >= ip_from && ip_number < ip_to {
-                return Ok(self.read_record(mem_offset + 4)?);
+                return self.read_record(mem_offset + 4);
             } else {
                 if ip_number < ip_from {
                     high = mid - 1;
@@ -294,93 +294,71 @@ impl ProxyDB {
                 long_name: country_long,
             });
         }
-        if REGION_POSITION[db_type] != 0 {
-            if record.region.is_none() {
+        if REGION_POSITION[db_type] != 0 && record.region.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (REGION_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.region = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if CITY_POSITION[db_type] != 0 {
-            if record.city.is_none() {
+        if CITY_POSITION[db_type] != 0 && record.city.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (CITY_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.city = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if ISP_POSITION[db_type] != 0 {
-            if record.isp.is_none() {
+        if ISP_POSITION[db_type] != 0 && record.isp.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (ISP_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.isp = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if PROXY_TYPE_POSITION[db_type] != 0 {
-            if record.proxy_type.is_none() {
+        if PROXY_TYPE_POSITION[db_type] != 0 && record.proxy_type.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (PROXY_TYPE_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.proxy_type = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if DOMAIN_POSITION[db_type] != 0 {
-            if record.domain.is_none() {
+        if DOMAIN_POSITION[db_type] != 0 && record.domain.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (DOMAIN_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.domain = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if USAGE_TYPE_POSITION[db_type] != 0 {
-            if record.usage_type.is_none() {
+        if USAGE_TYPE_POSITION[db_type] != 0 && record.usage_type.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (USAGE_TYPE_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.usage_type = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if ASN_POSITION[db_type] != 0 {
-            if record.asn.is_none() {
+        if ASN_POSITION[db_type] != 0 && record.asn.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (ASN_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.asn = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if AS_POSITION[db_type] != 0 {
-            if record.as_.is_none() {
+        if AS_POSITION[db_type] != 0 && record.as_.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (AS_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.as_ = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if LAST_SEEN_POSITION[db_type] != 0 {
-            if record.last_seen.is_none() {
+        if LAST_SEEN_POSITION[db_type] != 0 && record.last_seen.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (LAST_SEEN_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.last_seen = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if THREAT_POSITION[db_type] != 0 {
-            if record.threat.is_none() {
+        if THREAT_POSITION[db_type] != 0 && record.threat.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (THREAT_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.threat = Some(self.source.read_str(index as u64)?);
-            }
         }
-        if PROVIDER_POSITION[db_type] != 0 {
-            if record.provider.is_none() {
+        if PROVIDER_POSITION[db_type] != 0 && record.provider.is_none() {
                 let index = self
                     .source
                     .read_u32(4 * (PROVIDER_POSITION[db_type] - 2) as u64 + offset as u64)?;
                 record.provider = Some(self.source.read_str(index as u64)?);
-            }
         }
 
         Ok(record)
