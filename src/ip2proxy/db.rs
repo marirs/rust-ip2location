@@ -265,7 +265,7 @@ impl ProxyDB {
     fn read_record(&mut self, offset: u32) -> Result<ProxyRecord, Error> {
         let db_type = self.db_type as usize;
         let mut record = ProxyRecord::default();
-        record.is_proxy = Some(Proxy::IsAnError);
+
         if COUNTRY_POSITION[db_type] != 0 {
             let index = self
                 .source
