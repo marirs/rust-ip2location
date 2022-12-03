@@ -229,7 +229,7 @@ impl ProxyDB {
         let column_offset = database_column * 4 + 12;
         let mut row_offset;
         let mut mem_offset: u32;
-        if high <= 0 {
+        if high == 0 {
             return Ok(ProxyRecord::default());
         }
         if ipv6_index_base_address > 0 {
@@ -250,7 +250,7 @@ impl ProxyDB {
                 .source
                 .read_ipv6((mem_offset + column_offset as u32) as u64)?;
             if ip_address > ip_from && ip_address < ip_to {
-                return Ok(self.read_record(mem_offset + 16)?);
+                return self.read_record(mem_offset + 16);
             } else {
                 if ip_address < ip_from {
                     high = mid - 1;
