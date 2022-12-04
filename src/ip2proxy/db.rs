@@ -65,10 +65,16 @@ impl ProxyDB {
         //!
         //! let mut db = DB::from_file("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
         //!```
+        if !path.as_ref().exists() {
+            return Err(Error::IoError(
+                "Error opening DB file: No such file or directory".to_string(),
+            ));
+        }
+
         let db = File::open(&path)?;
-        let mut ss = Self::new(Source::File(path.as_ref().to_path_buf(), db));
-        ss.read_header()?;
-        Ok(ss)
+        let mut pdb = Self::new(Source::File(path.as_ref().to_path_buf(), db));
+        pdb.read_header()?;
+        Ok(pdb)
     }
 
     pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
@@ -82,11 +88,17 @@ impl ProxyDB {
         //!
         //! let mut db = DB::from_file_mmap("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
         //!```
+        if !path.as_ref().exists() {
+            return Err(Error::IoError(
+                "Error opening DB file: No such file or directory".to_string(),
+            ));
+        }
+
         let db = File::open(&path)?;
         let mm = unsafe { Mmap::map(&db) }?;
-        let mut ss = Self::new(Source::Mmap(path.as_ref().to_path_buf(), mm));
-        ss.read_header()?;
-        Ok(ss)
+        let mut pdb = Self::new(Source::Mmap(path.as_ref().to_path_buf(), mm));
+        pdb.read_header()?;
+        Ok(pdb)
     }
 
     pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<ProxyRecord, Error> {

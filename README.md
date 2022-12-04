@@ -35,6 +35,64 @@ cargo t -v
 ip2location = "0.3.2"
 ```
 
+### Example
+```rust
+use crate::{error, Record, DB};
+
+const IPV4BIN: &str = "data/IP2LOCATION-LITE-DB1.BIN";
+const IPV6BIN: &str = "data/IP2LOCATION-LITE-DB1.IPV6.BIN";
+const IP2PROXYBIN: &str = "data/IP2PROXY-IP-COUNTRY.BIN";
+
+// Lookup an IP v4 in the IP2Location V6 BIN Database
+fn ip_lookup_in_ipv6bin() -> Result<(), error::Error> {
+    let mut db = DB::from_file(IPV6BIN)?;
+    let record = db.ip_lookup("43.224.159.155".parse().unwrap())?;
+    let record = if let Record::LocationDb(rec) = record {
+        Some(rec)
+    } else {
+        None
+    };
+    assert!(record.is_some());
+    let record = record.unwrap();
+    assert!(!record.country.is_none());
+    assert_eq!(record.country.clone().unwrap().short_name, "IN");
+    assert_eq!(record.country.unwrap().long_name, "India");
+    Ok(())
+}
+
+// Lookup an IP v4 in the IP2Location V4 BIN Database
+fn ip_lookup_in_ipv4bin() -> Result<(), error::Error> {
+    let mut db = DB::from_file(IPV4BIN)?;
+    let record = db.ip_lookup("43.224.159.155".parse().unwrap())?;
+    let record = if let Record::LocationDb(rec) = record {
+        Some(rec)
+    } else {
+        None
+    };
+    assert!(record.is_some());
+    let record = record.unwrap();
+    assert!(!record.country.is_none());
+    assert_eq!(record.country.clone().unwrap().short_name, "IN");
+    assert_eq!(record.country.unwrap().long_name, "India");
+    Ok(())
+}
+
+// Lookup an IP in the Proxy Database
+fn ip_lookup_in_proxy_bin() -> Result<(), error::Error> {
+    let mut db = DB::from_file(IP2PROXYBIN)?;
+    let record = db.ip_lookup("1.1.1.1".parse().unwrap())?;
+    let record = if let Record::ProxyDb(rec) = record {
+        Some(rec)
+    } else {
+        None
+    };
+    assert!(record.is_some());
+    let record = record.unwrap();
+    assert!(!record.country.is_none());
+    Ok(())
+}
+```
+
 ### Executing the Example
 ```bash
 cargo b --example

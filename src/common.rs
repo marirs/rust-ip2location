@@ -175,6 +175,12 @@ impl DB {
         //!
         //! let mut db = DB::from_file_mmap("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
         //!```
+        if !path.as_ref().exists() {
+            return Err(Error::IoError(
+                "Error opening DB file: No such file or directory".to_string(),
+            ));
+        }
+
         if let Ok(location_db) = LocationDB::from_file_mmap(&path) {
             Ok(DB::LocationDb(location_db))
         } else if let Ok(proxy_db) = ProxyDB::from_file_mmap(&path) {
