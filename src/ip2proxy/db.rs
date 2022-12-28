@@ -272,34 +272,6 @@ impl ProxyDB {
         let db_type = self.db_type as usize;
         let mut record = ProxyRecord::default();
 
-        if COUNTRY_POSITION[db_type] != 0 {
-            let index = self
-                .source
-                .read_u32(offset as u64 + 4 * (COUNTRY_POSITION[db_type] - 2) as u64)?;
-            let country_short = self.source.read_str(index as u64)?;
-            let country_long = self.source.read_str(index as u64 + 3)?;
-            if country_short == "-" {
-                record.is_proxy = Some(Proxy::IsNotAProxy);
-            } else {
-                if record.proxy_type.is_none() {
-                    let index = self
-                        .source
-                        .read_u32(4 * (COUNTRY_POSITION[db_type] - 2) as u64 + offset as u64)?;
-                    record.proxy_type = Some(self.source.read_str(index as u64)?);
-                }
-                if record.proxy_type == Some("DCH".to_string())
-                    || record.proxy_type == Some("SES".to_string())
-                {
-                    record.is_proxy = Some(Proxy::IsADataCenterIpAddress);
-                } else {
-                    record.is_proxy = Some(Proxy::IsAProxy);
-                }
-            }
-            record.country = Some(Country {
-                short_name: country_short,
-                long_name: country_long,
-            });
-        }
         if REGION_POSITION[db_type] != 0 && record.region.is_none() {
             let index = self
                 .source
@@ -365,6 +337,34 @@ impl ProxyDB {
                 .source
                 .read_u32(4 * (PROVIDER_POSITION[db_type] - 2) as u64 + offset as u64)?;
             record.provider = Some(self.source.read_str(index as u64)?);
+        }
+        if COUNTRY_POSITION[db_type] != 0 {
+            let index = self
+                .source
+                .read_u32(offset as u64 + 4 * (COUNTRY_POSITION[db_type] - 2) as u64)?;
+            let country_short = self.source.read_str(index as u64)?;
+            let country_long = self.source.read_str(index as u64 + 3)?;
+            if country_short == "-" {
+                record.is_proxy = Some(Proxy::IsNotAProxy);
+            } else {
+                if record.proxy_type.is_none() {
+                    let index = self
+                        .source
+                        .read_u32(4 * (COUNTRY_POSITION[db_type] - 2) as u64 + offset as u64)?;
+                    record.proxy_type = Some(self.source.read_str(index as u64)?);
+                }
+                if record.proxy_type == Some("DCH".to_string())
+                    || record.proxy_type == Some("SES".to_string())
+                {
+                    record.is_proxy = Some(Proxy::IsADataCenterIpAddress);
+                } else {
+                    record.is_proxy = Some(Proxy::IsAProxy);
+                }
+            }
+            record.country = Some(Country {
+                short_name: country_short,
+                long_name: country_long,
+            });
         }
 
         Ok(record)

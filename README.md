@@ -170,7 +170,7 @@ ProxyDb(
             IsAProxy,
         ),
         proxy_type: Some(
-            "US",
+            "DCH",
         ),
         asn: Some(
             "13335",
