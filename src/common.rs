@@ -127,9 +127,7 @@ impl Source {
         while i < 16 {
             buf[i] = self.read_u8(offset + j)?;
             i += 1;
-            if j > 0 {
-                j -= 1;
-            }
+            j = j.saturating_sub(1);
         }
         let result = Ipv6Addr::from(buf);
         Ok(result)
