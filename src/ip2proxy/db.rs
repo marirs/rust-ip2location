@@ -176,10 +176,7 @@ impl ProxyDB {
         if (self.db_year <= 20 && self.product_code == 0) || self.product_code == 2 {
             Ok(())
         } else {
-            Err(Error::InvalidBinDatabase(
-                self.db_year,
-                self.product_code,
-            ))
+            Err(Error::InvalidBinDatabase(self.db_year, self.product_code))
         }
     }
 
