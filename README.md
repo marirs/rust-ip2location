@@ -32,7 +32,7 @@ cargo t -v
 ### Usage
 ```toml
 [dependencies]
-ip2location = "0.3.4"
+ip2location = "0.3.5"
 ```
 
 ### Example
