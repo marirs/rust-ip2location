@@ -1,6 +1,6 @@
 [package]
 name = "ip2location"
-version = "0.3.5"
+version = "0.4.0"
 authors = ["MARIRS <marirs@gmail.com>"]
 description = "Find geo information & proxy information based on the given IP using IP2Location BIN databases"
 keywords = ["ip2location", "geoip", "geolocation", "ip", "proxy"]

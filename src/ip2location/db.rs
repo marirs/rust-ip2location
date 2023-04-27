@@ -402,6 +402,27 @@ impl LocationDB {
                 .read_u32((row_addr + 4 * (CATEGORY_POSITION[self.db_type as usize] - 1)).into())?;
             result.category = Some(self.source.read_str(index.into())?);
         }
+
+        if DISTRICT_POSITION[self.db_type as usize] > 0 {
+            let index = self
+                .source
+                .read_u32((row_addr + 4 * (DISTRICT_POSITION[self.db_type as usize] - 1)).into())?;
+            result.district = Some(self.source.read_str(index.into())?);
+        }
+
+        if ASN_POSITION[self.db_type as usize] > 0 {
+            let index = self
+                .source
+                .read_u32((row_addr + 4 * (ASN_POSITION[self.db_type as usize] - 1)).into())?;
+            result.asn = Some(self.source.read_str(index.into())?);
+        }
+
+        if AS_POSITION[self.db_type as usize] > 0 {
+            let index = self
+                .source
+                .read_u32((row_addr + 4 * (AS_POSITION[self.db_type as usize] - 1)).into())?;
+            result.as_name = Some(self.source.read_str(index.into())?);
+        }
         Ok(result)
     }
 }

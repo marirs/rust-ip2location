@@ -35,6 +35,9 @@ pub struct LocationRecord {
     pub usage_type: Option<String>,
     pub address_type: Option<String>,
     pub category: Option<String>,
+    pub district: Option<String>,
+    pub asn: Option<String>,
+    pub as_name: Option<String>,
 }
 
 impl LocationRecord {
@@ -68,6 +71,9 @@ impl Default for LocationRecord {
             usage_type: None,
             address_type: None,
             category: None,
+            district: None,
+            asn: None,
+            as_name: None,
         }
     }
 }

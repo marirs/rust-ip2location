@@ -134,6 +134,9 @@ Ok(
         usage_type: None,
         address_type: None,
         category: None,
+        district: None,
+        asn: None,
+        as_name: None,
     },
 )
 
