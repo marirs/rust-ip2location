@@ -1,6 +1,6 @@
 use std::{fmt, io};
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     GenericError(String),
     IoError(String),
@@ -14,6 +14,9 @@ impl From<io::Error> for Error {
         Error::IoError(err.to_string())
     }
 }
+
+// Use default implementation for `std::error::Error`
+impl std::error::Error for Error {}
 
 impl From<&str> for Error {
     fn from(err: &str) -> Error {
@@ -39,7 +42,7 @@ impl From<std::net::AddrParseError> for Error {
     }
 }
 
-impl fmt::Debug for Error {
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::GenericError(msg) => write!(f, "GenericError: {}", msg)?,
