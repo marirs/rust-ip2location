@@ -4,7 +4,7 @@ use crate::error::Error;
 fn test_error_display() {
     assert_eq!(
         format!(
-            "{:?}",
+            "{}",
             Error::IoError(
                 "Error opening DB file: No such file or directory (os error 2)".to_string()
             )
@@ -13,12 +13,12 @@ fn test_error_display() {
     );
 
     assert_eq!(
-        format!("{:?}", Error::GenericError("an error occurred".to_string())),
+        format!("{}", Error::GenericError("an error occurred".to_string())),
         "GenericError: an error occurred".to_string()
     );
 
     assert_eq!(
-        format!("{:?}", Error::RecordNotFound),
+        format!("{}", Error::RecordNotFound),
         "RecordNotFound: no record found".to_string()
     );
 }
