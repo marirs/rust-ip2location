@@ -32,12 +32,12 @@ cargo t -v
 ### Usage
 ```toml
 [dependencies]
-ip2location = "0.4.2"
+ip2location = "0.4.4"
 ```
 
 ### Example
 ```rust
-use crate::{error, Record, DB};
+use ip2location::{error, Record, DB};
 
 const IPV4BIN: &str = "data/IP2LOCATION-LITE-DB1.BIN";
 const IPV6BIN: &str = "data/IP2LOCATION-LITE-DB1.IPV6.BIN";
