@@ -2,12 +2,15 @@
 
 use serde::Serialize;
 use serde_with::skip_serializing_none;
-use std::net::{IpAddr, Ipv6Addr};
+use std::{
+    borrow::Cow,
+    net::{IpAddr, Ipv6Addr},
+};
 
 #[derive(PartialEq, Debug, Clone, Serialize)]
-pub struct Country {
-    pub short_name: String,
-    pub long_name: String,
+pub struct Country<'a> {
+    pub short_name: Cow<'a, str>,
+    pub long_name: Cow<'a, str>,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize)]
@@ -20,30 +23,30 @@ pub enum Proxy {
 
 #[skip_serializing_none]
 #[derive(PartialEq, Debug, Clone, Serialize)]
-pub struct ProxyRecord {
+pub struct ProxyRecord<'a> {
     pub ip: IpAddr,
-    pub country: Option<Country>,
-    pub region: Option<String>,
-    pub city: Option<String>,
-    pub isp: Option<String>,
-    pub domain: Option<String>,
+    pub country: Option<Country<'a>>,
+    pub region: Option<Cow<'a, str>>,
+    pub city: Option<Cow<'a, str>>,
+    pub isp: Option<Cow<'a, str>>,
+    pub domain: Option<Cow<'a, str>>,
     pub is_proxy: Option<Proxy>,
-    pub proxy_type: Option<String>,
-    pub asn: Option<String>,
-    pub as_: Option<String>,
-    pub last_seen: Option<String>,
-    pub threat: Option<String>,
-    pub provider: Option<String>,
-    pub usage_type: Option<String>,
+    pub proxy_type: Option<Cow<'a, str>>,
+    pub asn: Option<Cow<'a, str>>,
+    pub as_: Option<Cow<'a, str>>,
+    pub last_seen: Option<Cow<'a, str>>,
+    pub threat: Option<Cow<'a, str>>,
+    pub provider: Option<Cow<'a, str>>,
+    pub usage_type: Option<Cow<'a, str>>,
 }
 
-impl ProxyRecord {
+impl ProxyRecord<'_> {
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 }
 
-impl Default for ProxyRecord {
+impl Default for ProxyRecord<'_> {
     fn default() -> Self {
         ProxyRecord {
             ip: IpAddr::V6(Ipv6Addr::UNSPECIFIED),

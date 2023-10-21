@@ -5,8 +5,7 @@ use crate::{
 };
 use memmap::Mmap;
 use std::{
-    fs::File,
-    io::{Read, Seek, SeekFrom},
+    borrow::Cow,
     net::{IpAddr, Ipv6Addr},
     path::{Path, PathBuf},
 };
@@ -24,103 +23,58 @@ pub enum DB {
 }
 
 #[derive(Debug)]
-pub enum Record {
-    LocationDb(LocationRecord),
-    ProxyDb(ProxyRecord),
+pub enum Record<'a> {
+    LocationDb(LocationRecord<'a>),
+    ProxyDb(ProxyRecord<'a>),
 }
 
 #[derive(Debug)]
-pub(crate) enum Source {
-    File(PathBuf, File),
-    Mmap(PathBuf, Mmap),
+pub(crate) struct Source {
+    path: PathBuf,
+    map: Mmap,
 }
 
 impl std::fmt::Display for Source {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Mmap(ff, _) => write!(f, "{}", ff.display()),
-            Self::File(ff, _) => write!(f, "{}", ff.display()),
-        }
+        write!(f, "{}", self.path.display())
     }
 }
 
 impl Source {
-    pub fn read_u8(&mut self, offset: u64) -> Result<u8, Error> {
-        match self {
-            Source::File(_, f) => {
-                f.seek(SeekFrom::Start(offset - 1))?;
-                let mut buf = [0_u8; 1];
-                f.read_exact(&mut buf)?;
-                Ok(buf[0])
-            }
-            Source::Mmap(_, m) => Ok(m[(offset - 1) as usize]),
-        }
+    pub fn new(path: PathBuf, map: Mmap) -> Self {
+        Self { path, map }
     }
 
-    pub fn read_u32(&mut self, offset: u64) -> Result<u32, Error> {
-        match self {
-            Source::File(_, f) => {
-                f.seek(SeekFrom::Start(offset - 1))?;
-                let mut buf = [0_u8; 4];
-                f.read_exact(&mut buf)?;
-                let result = u32::from_ne_bytes(buf);
-                Ok(result)
-            }
-            Source::Mmap(_, m) => {
-                let mut buf = [0_u8; 4];
-                buf[0] = m[(offset - 1) as usize];
-                buf[1] = m[offset as usize];
-                buf[2] = m[(offset + 1) as usize];
-                buf[3] = m[(offset + 2) as usize];
-                let result = u32::from_ne_bytes(buf);
-                Ok(result)
-            }
-        }
+    pub fn read_u8(&self, offset: u64) -> Result<u8, Error> {
+        Ok(self.map[(offset - 1) as usize])
     }
 
-    pub fn read_f32(&mut self, offset: u64) -> Result<f32, Error> {
-        match self {
-            Source::File(_, f) => {
-                f.seek(SeekFrom::Start(offset - 1))?;
-                let mut buf = [0_u8; 4];
-                f.read_exact(&mut buf)?;
-                let result = f32::from_ne_bytes(buf);
-                Ok(result)
-            }
-            Source::Mmap(_, m) => {
-                let mut buf = [0_u8; 4];
-                buf[0] = m[(offset - 1) as usize];
-                buf[1] = m[offset as usize];
-                buf[2] = m[(offset + 1) as usize];
-                buf[3] = m[(offset + 2) as usize];
-                let result = f32::from_ne_bytes(buf);
-                Ok(result)
-            }
-        }
+    pub fn read_u32(&self, offset: u64) -> Result<u32, Error> {
+        let result = u32::from_ne_bytes(
+            self.map[(offset - 1) as usize..(offset + 3) as usize]
+                .try_into()
+                .unwrap(),
+        );
+        Ok(result)
     }
 
-    pub fn read_str(&mut self, offset: u64) -> Result<String, Error> {
+    pub fn read_f32(&self, offset: u64) -> Result<f32, Error> {
+        let result = f32::from_ne_bytes(
+            self.map[(offset - 1) as usize..(offset + 3) as usize]
+                .try_into()
+                .unwrap(),
+        );
+        Ok(result)
+    }
+
+    pub fn read_str(&self, offset: u64) -> Result<Cow<'_, str>, Error> {
         let len = self.read_u8(offset + 1)? as usize;
-        match self {
-            Source::File(_, f) => {
-                f.seek(SeekFrom::Start(offset + 1))?;
-                let mut buf = vec![0_u8; len];
-                f.read_exact(&mut buf)?;
-                let s = String::from_utf8(buf)?;
-                Ok(s)
-            }
-            Source::Mmap(_, m) => {
-                let mut buf = vec![0_u8; len];
-                for i in 0..len {
-                    buf[i] = m[(offset + 1) as usize + i];
-                }
-                let s = String::from_utf8(buf)?;
-                Ok(s)
-            }
-        }
+        let s =
+            String::from_utf8_lossy(&self.map[(offset + 1) as usize..(offset + 1) as usize + len]);
+        Ok(s)
     }
 
-    pub fn read_ipv6(&mut self, offset: u64) -> Result<Ipv6Addr, Error> {
+    pub fn read_ipv6(&self, offset: u64) -> Result<Ipv6Addr, Error> {
         let mut buf = [0_u8; 16];
         let mut i = 0;
         let mut j = 15;
@@ -135,16 +89,17 @@ impl Source {
 }
 
 impl DB {
-    /// Consume the unopened db and open the file.
+    /// Consume the unopened db and mmap the file.
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<DB, Error> {
-        //! Loads a Ip2Location/Ip2Proxy Database .bin file from path
+        //! Loads a Ip2Location/Ip2Proxy Database .bin file from path using
+        //! mmap (memap) feature.
         //!
         //! ## Example usage
         //!
         //!```rust
-        //! use ip2location::LocationDB;
+        //! use ip2location::DB;
         //!
-        //! let mut db = LocationDB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! let mut db = DB::from_file("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
         //!```
         if !path.as_ref().exists() {
             return Err(Error::IoError(
@@ -161,33 +116,6 @@ impl DB {
         }
     }
 
-    /// Consume the unopened db and mmap the file.
-    pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<DB, Error> {
-        //! Loads a Ip2Location/Ip2Proxy Database .bin file from path using
-        //! mmap (memap) feature.
-        //!
-        //! ## Example usage
-        //!
-        //!```rust
-        //! use ip2location::DB;
-        //!
-        //! let mut db = DB::from_file_mmap("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
-        //!```
-        if !path.as_ref().exists() {
-            return Err(Error::IoError(
-                "Error opening DB file: No such file or directory".to_string(),
-            ));
-        }
-
-        if let Ok(location_db) = LocationDB::from_file_mmap(&path) {
-            Ok(DB::LocationDb(location_db))
-        } else if let Ok(proxy_db) = ProxyDB::from_file_mmap(&path) {
-            Ok(DB::ProxyDb(proxy_db))
-        } else {
-            Err(Error::UnknownDb)
-        }
-    }
-
     pub fn print_db_info(&self) {
         //! Prints the DB Information of Ip2Location/Ip2Proxy to console
         //!
@@ -196,7 +124,7 @@ impl DB {
         //! ```rust
         //! use ip2location::DB;
         //!
-        //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
         //! db.print_db_info();
         //! ```
         match self {

@@ -8,6 +8,7 @@ use crate::{
 };
 use memmap::Mmap;
 use std::{
+    borrow::Cow,
     fs::File,
     net::{IpAddr, Ipv6Addr},
     path::Path,
@@ -56,7 +57,8 @@ impl ProxyDB {
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        //! Loads a Ip2Proxy Database .bin file from path
+        //! Loads a Ip2Proxy Database .bin file from path using
+        //! mmap (memap) feature.
         //!
         //! ## Example usage
         //!
@@ -72,31 +74,8 @@ impl ProxyDB {
         }
 
         let db = File::open(&path)?;
-        let mut pdb = Self::new(Source::File(path.as_ref().to_path_buf(), db));
-        pdb.read_header()?;
-        Ok(pdb)
-    }
-
-    pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        //! Loads a Ip2Proxy Database .bin file from path using
-        //! mmap (memap) feature.
-        //!
-        //! ## Example usage
-        //!
-        //!```rust
-        //! use ip2location::DB;
-        //!
-        //! let mut db = DB::from_file_mmap("data/IP2PROXY-IP-COUNTRY.BIN").unwrap();
-        //!```
-        if !path.as_ref().exists() {
-            return Err(Error::IoError(
-                "Error opening DB file: No such file or directory".to_string(),
-            ));
-        }
-
-        let db = File::open(&path)?;
-        let mm = unsafe { Mmap::map(&db) }?;
-        let mut pdb = Self::new(Source::Mmap(path.as_ref().to_path_buf(), mm));
+        let map = unsafe { Mmap::map(&db) }?;
+        let mut pdb = Self::new(Source::new(path.as_ref().to_path_buf(), map));
         pdb.read_header()?;
         Ok(pdb)
     }
@@ -350,8 +329,8 @@ impl ProxyDB {
                         .read_u32(4 * (COUNTRY_POSITION[db_type] - 2) as u64 + offset as u64)?;
                     record.proxy_type = Some(self.source.read_str(index as u64)?);
                 }
-                if record.proxy_type == Some("DCH".to_string())
-                    || record.proxy_type == Some("SES".to_string())
+                if record.proxy_type == Some(Cow::from("DCH"))
+                    || record.proxy_type == Some(Cow::from("SES"))
                 {
                     record.is_proxy = Some(Proxy::IsADataCenterIpAddress);
                 } else {

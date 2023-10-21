@@ -16,7 +16,6 @@ use std::{
 
 #[derive(Debug)]
 pub struct LocationDB {
-    //    path: PathBuf,
     db_type: u8,
     db_column: u8,
     db_year: u8,
@@ -37,7 +36,6 @@ pub struct LocationDB {
 impl LocationDB {
     pub(crate) fn new(source: Source) -> Self {
         Self {
-            //            path: db.path,
             db_type: 0,
             db_column: 0,
             db_year: 0,
@@ -57,28 +55,6 @@ impl LocationDB {
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        //! Loads a Ip2Location Database .bin file from path
-        //!
-        //! ## Example usage
-        //!
-        //!```rust
-        //! use ip2location::LocationDB;
-        //!
-        //! let mut db = LocationDB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
-        //!```
-        if !path.as_ref().exists() {
-            return Err(Error::IoError(
-                "Error opening DB file: No such file or directory".to_string(),
-            ));
-        }
-
-        let db = File::open(&path)?;
-        let mut ldb = Self::new(Source::File(path.as_ref().to_path_buf(), db));
-        ldb.read_header()?;
-        Ok(ldb)
-    }
-
-    pub fn from_file_mmap<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         //! Loads a Ip2Location Database .bin file from path using
         //! mmap (memap) feature.
         //!
@@ -87,7 +63,7 @@ impl LocationDB {
         //!```rust
         //! use ip2location::DB;
         //!
-        //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
         //!```
         if !path.as_ref().exists() {
             return Err(Error::IoError(
@@ -96,8 +72,8 @@ impl LocationDB {
         }
 
         let db = File::open(&path)?;
-        let mm = unsafe { Mmap::map(&db) }?;
-        let mut ldb = Self::new(Source::Mmap(path.as_ref().to_path_buf(), mm));
+        let map = unsafe { Mmap::map(&db) }?;
+        let mut ldb = Self::new(Source::new(path.as_ref().to_path_buf(), map));
         ldb.read_header()?;
         Ok(ldb)
     }
@@ -110,7 +86,7 @@ impl LocationDB {
         //! ```rust
         //! use ip2location::DB;
         //!
-        //! let mut db = DB::from_file_mmap("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
+        //! let mut db = DB::from_file("data/IP2LOCATION-LITE-DB1.BIN").unwrap();
         //! db.print_db_info();
         //! ```
         println!("Db Path: {}", self.source);
