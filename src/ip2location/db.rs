@@ -98,7 +98,7 @@ impl LocationDB {
         );
     }
 
-    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<LocationRecord, Error> {
+    pub fn ip_lookup(&self, ip: IpAddr) -> Result<LocationRecord, Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the Geo information
         //!
         //! ## Example usage
@@ -168,7 +168,7 @@ impl LocationDB {
         }
     }
 
-    fn ipv4_lookup(&mut self, mut ip_number: u32) -> Result<LocationRecord, Error> {
+    fn ipv4_lookup(&self, mut ip_number: u32) -> Result<LocationRecord, Error> {
         if ip_number == u32::MAX {
             ip_number -= 1;
         }
@@ -198,7 +198,7 @@ impl LocationDB {
         Err(Error::RecordNotFound)
     }
 
-    fn ipv6_lookup(&mut self, ipv6: Ipv6Addr) -> Result<LocationRecord, Error> {
+    fn ipv6_lookup(&self, ipv6: Ipv6Addr) -> Result<LocationRecord, Error> {
         let mut low = 0;
         let mut high = self.ipv6_db_count;
         if self.ipv6_index_base_addr > 0 {
@@ -228,8 +228,8 @@ impl LocationDB {
         Err(Error::RecordNotFound)
     }
 
-    fn read_record(&mut self, row_addr: u32) -> Result<LocationRecord, Error> {
-        let mut result = record::LocationRecord::default();
+    fn read_record(&self, row_addr: u32) -> Result<LocationRecord, Error> {
+        let mut result = LocationRecord::default();
 
         if COUNTRY_POSITION[self.db_type as usize] > 0 {
             let index = self
