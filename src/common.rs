@@ -24,8 +24,8 @@ pub enum DB {
 
 #[derive(Debug)]
 pub enum Record<'a> {
-    LocationDb(LocationRecord<'a>),
-    ProxyDb(ProxyRecord<'a>),
+    LocationDb(Box<LocationRecord<'a>>),
+    ProxyDb(Box<ProxyRecord<'a>>),
 }
 
 #[derive(Debug)]
@@ -153,8 +153,8 @@ impl DB {
         //! assert_eq!(geo_info.country.unwrap().short_name, "FR")
         //!```
         match self {
-            Self::LocationDb(db) => Ok(Record::LocationDb(db.ip_lookup(ip)?)),
-            Self::ProxyDb(db) => Ok(Record::ProxyDb(db.ip_lookup(ip)?)),
+            Self::LocationDb(db) => Ok(Record::LocationDb(Box::new(db.ip_lookup(ip)?))),
+            Self::ProxyDb(db) => Ok(Record::ProxyDb(Box::new(db.ip_lookup(ip)?))),
         }
     }
 }
