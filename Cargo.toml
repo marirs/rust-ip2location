@@ -1,6 +1,6 @@
 [package]
 name = "ip2location"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["MARIRS <marirs@gmail.com>"]
 description = "Find geo information & proxy information based on the given IP using IP2Location BIN databases"
 keywords = ["ip2location", "geoip", "geolocation", "ip", "proxy"]
@@ -19,7 +19,7 @@ edition = "2021"
 memmap = "0.7.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_with = "3.4.0"
+serde_with = "3.9.0"
 
 [profile.dev]
 opt-level = 3
