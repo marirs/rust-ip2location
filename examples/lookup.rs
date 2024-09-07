@@ -7,7 +7,7 @@ fn main() -> Result<(), String> {
     let mut db = match DB::from_file(
         &*args
             .next()
-            .ok_or_else(|| "First argument is the path to db")?,
+            .ok_or("First argument is the path to db")?,
     ) {
         Ok(db) => db,
         Err(e) => {
@@ -18,7 +18,7 @@ fn main() -> Result<(), String> {
 
     let ip: IpAddr = args
         .next()
-        .ok_or_else(|| "Second argument must be the IP address, like 128.101.101.101")?
+        .ok_or("Second argument must be the IP address, like 128.101.101.101")?
         .parse()
         .unwrap();
 

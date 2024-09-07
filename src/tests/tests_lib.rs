@@ -15,7 +15,7 @@ fn test_ipv4_lookup_in_ipv4bin() -> Result<(), error::Error> {
     };
     assert!(record.is_some());
     let record = record.unwrap();
-    assert!(!record.country.is_none());
+    assert!(record.country.is_some());
     assert_eq!(record.country.clone().unwrap().short_name, "IN");
     assert_eq!(record.country.unwrap().long_name, "India");
     Ok(())
@@ -32,7 +32,7 @@ fn test_ipv4_lookup_in_ipv6bin() -> Result<(), error::Error> {
     };
     assert!(record.is_some());
     let record = record.unwrap();
-    assert!(!record.country.is_none());
+    assert!(record.country.is_some());
     assert_eq!(record.country.clone().unwrap().short_name, "IN");
     assert_eq!(record.country.unwrap().long_name, "India");
     Ok(())
@@ -49,7 +49,7 @@ fn test_ipv6_lookup() -> Result<(), error::Error> {
     };
     assert!(record.is_some());
     let record = record.unwrap();
-    assert!(!record.country.is_none());
+    assert!(record.country.is_some());
     assert_eq!(record.country.clone().unwrap().short_name, "IT");
     assert_eq!(record.country.unwrap().long_name, "Italy");
     Ok(())
@@ -77,6 +77,6 @@ fn test_ip_lookup_in_proxy_bin() -> Result<(), error::Error> {
     };
     assert!(record.is_some());
     let record = record.unwrap();
-    assert!(!record.country.is_none());
+    assert!(record.country.is_some());
     Ok(())
 }

@@ -24,8 +24,8 @@ pub enum DB {
 
 #[derive(Debug)]
 pub enum Record<'a> {
-    LocationDb(LocationRecord<'a>),
-    ProxyDb(ProxyRecord<'a>),
+    LocationDb(Box<LocationRecord<'a>>),
+    ProxyDb(Box<ProxyRecord<'a>>),
 }
 
 #[derive(Debug)]
@@ -52,8 +52,7 @@ impl Source {
     pub fn read_u32(&self, offset: u64) -> Result<u32, Error> {
         let result = u32::from_ne_bytes(
             self.map[(offset - 1) as usize..(offset + 3) as usize]
-                .try_into()
-                .unwrap(),
+                .try_into()?,
         );
         Ok(result)
     }
@@ -61,8 +60,7 @@ impl Source {
     pub fn read_f32(&self, offset: u64) -> Result<f32, Error> {
         let result = f32::from_ne_bytes(
             self.map[(offset - 1) as usize..(offset + 3) as usize]
-                .try_into()
-                .unwrap(),
+                .try_into()?,
         );
         Ok(result)
     }
@@ -153,8 +151,8 @@ impl DB {
         //! assert_eq!(geo_info.country.unwrap().short_name, "FR")
         //!```
         match self {
-            Self::LocationDb(db) => Ok(Record::LocationDb(db.ip_lookup(ip)?)),
-            Self::ProxyDb(db) => Ok(Record::ProxyDb(db.ip_lookup(ip)?)),
+            Self::LocationDb(db) => Ok(Record::LocationDb(Box::new(db.ip_lookup(ip)?))),
+            Self::ProxyDb(db) => Ok(Record::ProxyDb(Box::new(db.ip_lookup(ip)?))),
         }
     }
 }

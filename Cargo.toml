@@ -5,7 +5,6 @@ authors = ["MARIRS <marirs@gmail.com>"]
 description = "Find geo information & proxy information based on the given IP using IP2Location BIN databases"
 keywords = ["ip2location", "geoip", "geolocation", "ip", "proxy"]
 categories = ["database", "network-programming"]
-license = "MIT"
 license-file = "LICENSE"
 exclude = [
     ".gitignore",
