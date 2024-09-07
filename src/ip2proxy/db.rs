@@ -80,7 +80,7 @@ impl ProxyDB {
         Ok(pdb)
     }
 
-    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<ProxyRecord, Error> {
+    pub fn ip_lookup(&self, ip: IpAddr) -> Result<ProxyRecord, Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the Proxy information
         //!
         //! ## Example usage
@@ -159,7 +159,7 @@ impl ProxyDB {
         }
     }
 
-    fn get_ipv4_record(&mut self, mut ip_number: u32) -> Result<ProxyRecord, Error> {
+    fn get_ipv4_record(&self, mut ip_number: u32) -> Result<ProxyRecord, Error> {
         let mut ip_from: u32;
         let mut ip_to: u32;
         if ip_number == MAX_IPV4_RANGE {
@@ -201,7 +201,7 @@ impl ProxyDB {
         Err(Error::RecordNotFound)
     }
 
-    fn get_ipv6_record(&mut self, ip_address: Ipv6Addr) -> Result<ProxyRecord, Error> {
+    fn get_ipv6_record(&self, ip_address: Ipv6Addr) -> Result<ProxyRecord, Error> {
         let base_address = self.ipv6_db_addr;
         let database_column = self.db_column;
         let ipv6_index_base_address = self.ipv4_index_base_addr;
@@ -244,7 +244,7 @@ impl ProxyDB {
         Err(Error::RecordNotFound)
     }
 
-    fn read_record(&mut self, offset: u32) -> Result<ProxyRecord, Error> {
+    fn read_record(&self, offset: u32) -> Result<ProxyRecord, Error> {
         let db_type = self.db_type as usize;
         let mut record = ProxyRecord::default();
 
