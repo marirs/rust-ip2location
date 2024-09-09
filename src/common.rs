@@ -3,7 +3,7 @@ use crate::{
     ip2location::{db::LocationDB, record::LocationRecord},
     ip2proxy::{db::ProxyDB, record::ProxyRecord},
 };
-use memmap::Mmap;
+use memmap2::Mmap;
 use std::{
     borrow::Cow,
     net::{IpAddr, Ipv6Addr},
