@@ -6,7 +6,7 @@ use crate::{
         record::{self, LocationRecord},
     },
 };
-use memmap::Mmap;
+use memmap2::Mmap;
 use std::{
     fs::File,
     net::{IpAddr, Ipv6Addr},

@@ -6,7 +6,7 @@ use crate::{
         record::{Country, Proxy, ProxyRecord},
     },
 };
-use memmap::Mmap;
+use memmap2::Mmap;
 use std::{
     borrow::Cow,
     fs::File,
