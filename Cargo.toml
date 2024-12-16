@@ -16,10 +16,10 @@ homepage = "https://github.com/marirs/rust-ip2location"
 edition = "2021"
 
 [dependencies]
-memmap2 = "0.9.0"
+memmap2 = "0.9"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_with = "3.9.0"
+serde_with = "3.11"
 
 [profile.dev]
 opt-level = 3
