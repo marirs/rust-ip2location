@@ -6,7 +6,7 @@ const IP2PROXYBIN: &str = "data/IP2PROXY-IP-COUNTRY.BIN";
 
 #[test]
 fn test_ipv4_lookup_in_ipv4bin() -> Result<(), error::Error> {
-    let mut db = DB::from_file(IPV4BIN)?;
+    let db = DB::from_file(IPV4BIN)?;
     let record = db.ip_lookup("43.224.159.155".parse().unwrap())?;
     let record = if let Record::LocationDb(rec) = record {
         Some(rec)
@@ -23,7 +23,7 @@ fn test_ipv4_lookup_in_ipv4bin() -> Result<(), error::Error> {
 
 #[test]
 fn test_ipv4_lookup_in_ipv6bin() -> Result<(), error::Error> {
-    let mut db = DB::from_file(IPV6BIN)?;
+    let db = DB::from_file(IPV6BIN)?;
     let record = db.ip_lookup("43.224.159.155".parse().unwrap())?;
     let record = if let Record::LocationDb(rec) = record {
         Some(rec)
@@ -40,7 +40,7 @@ fn test_ipv4_lookup_in_ipv6bin() -> Result<(), error::Error> {
 
 #[test]
 fn test_ipv6_lookup() -> Result<(), error::Error> {
-    let mut db = DB::from_file(IPV6BIN)?;
+    let db = DB::from_file(IPV6BIN)?;
     let record = db.ip_lookup("2a01:b600:8001::".parse().unwrap())?;
     let record = if let Record::LocationDb(rec) = record {
         Some(rec)
@@ -68,7 +68,7 @@ fn test_err_filenotfound_location() -> Result<(), error::Error> {
 
 #[test]
 fn test_ip_lookup_in_proxy_bin() -> Result<(), error::Error> {
-    let mut db = DB::from_file(IP2PROXYBIN)?;
+    let db = DB::from_file(IP2PROXYBIN)?;
     let record = db.ip_lookup("1.1.1.1".parse().unwrap())?;
     let record = if let Record::ProxyDb(rec) = record {
         Some(rec)

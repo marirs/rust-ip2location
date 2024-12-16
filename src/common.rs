@@ -131,7 +131,7 @@ impl DB {
         }
     }
 
-    pub fn ip_lookup(&mut self, ip: IpAddr) -> Result<Record, Error> {
+    pub fn ip_lookup(&self, ip: IpAddr) -> Result<Record, Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the
         //! Geo information or Proxy Information
         //!
