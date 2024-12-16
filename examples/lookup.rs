@@ -4,11 +4,7 @@ use ip2location::DB;
 
 fn main() -> Result<(), String> {
     let mut args = std::env::args().skip(1);
-    let mut db = match DB::from_file(
-        &*args
-            .next()
-            .ok_or("First argument is the path to db")?,
-    ) {
+    let db = match DB::from_file(&*args.next().ok_or("First argument is the path to db")?) {
         Ok(db) => db,
         Err(e) => {
             println!("{:?}", e);
