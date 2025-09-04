@@ -399,6 +399,27 @@ impl LocationDB {
                 .read_u32((row_addr + 4 * (AS_POSITION[self.db_type as usize] - 1)).into())?;
             result.as_name = Some(self.source.read_str(index.into())?);
         }
+
+        if ASDOMAIN_POSITION[self.db_type as usize] > 0 {
+            let index = self
+                .source
+                .read_u32((row_addr + 4 * (ASDOMAIN_POSITION[self.db_type as usize] - 1)).into())?;
+            result.as_domain = Some(self.source.read_str(index.into())?);
+        }
+
+        if ASUSAGETYPE_POSITION[self.db_type as usize] > 0 {
+            let index = self
+                .source
+                .read_u32((row_addr + 4 * (ASUSAGETYPE_POSITION[self.db_type as usize] - 1)).into())?;
+            result.as_usage_type = Some(self.source.read_str(index.into())?);
+        }
+
+        if ASCIDR_POSITION[self.db_type as usize] > 0 {
+            let index = self
+                .source
+                .read_u32((row_addr + 4 * (ASCIDR_POSITION[self.db_type as usize] - 1)).into())?;
+            result.as_cidr = Some(self.source.read_str(index.into())?);
+        }
         Ok(result)
     }
 }

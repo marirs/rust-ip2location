@@ -41,6 +41,9 @@ pub struct LocationRecord<'a> {
     pub district: Option<Cow<'a, str>>,
     pub asn: Option<Cow<'a, str>>,
     pub as_name: Option<Cow<'a, str>>,
+    pub as_domain: Option<Cow<'a, str>>,
+    pub as_usage_type: Option<Cow<'a, str>>,
+    pub as_cidr: Option<Cow<'a, str>>,
 }
 
 impl LocationRecord<'_> {
@@ -77,6 +80,9 @@ impl Default for LocationRecord<'_> {
             district: None,
             asn: None,
             as_name: None,
+            as_domain: None,
+            as_usage_type: None,
+            as_cidr: None,
         }
     }
 }
