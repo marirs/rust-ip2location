@@ -7,12 +7,20 @@ use std::{
     net::{IpAddr, Ipv6Addr},
 };
 
+/// ISO 3166 country information.
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub struct Country<'a> {
+    /// Two-letter country code (e.g. `"US"`).
     pub short_name: Cow<'a, str>,
+    /// Full country name (e.g. `"United States of America"`).
     pub long_name: Cow<'a, str>,
 }
 
+/// Geolocation record returned by an IP2Location database lookup.
+///
+/// Which fields are populated depends on the database type (DB1–DB26).
+/// Unpopulated fields are `None` and omitted during JSON serialisation.
+/// String fields borrow from the memory-mapped file (zero-copy).
 #[skip_serializing_none]
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub struct LocationRecord<'a> {
@@ -47,6 +55,7 @@ pub struct LocationRecord<'a> {
 }
 
 impl LocationRecord<'_> {
+    /// Serialise this record to a JSON string.
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }

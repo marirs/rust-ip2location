@@ -14,9 +14,13 @@ use std::{
     path::Path,
 };
 
+/// An opened IP2Proxy proxy-detection BIN database.
+///
+/// Holds the parsed header metadata and a memory-mapped [`Source`].
+/// Use [`DB::from_file`](crate::DB::from_file) to open, or
+/// [`ProxyDB::from_file`] to open directly.
 #[derive(Debug)]
 pub struct ProxyDB {
-    //    path: PathBuf,
     db_type: u8,
     db_column: u8,
     db_year: u8,
@@ -35,9 +39,10 @@ pub struct ProxyDB {
 }
 
 impl ProxyDB {
+    /// Create an uninitialised `ProxyDB` wrapping the given source.
+    /// The caller must call [`read_header`](Self::read_header) before use.
     pub(crate) fn new(source: Source) -> Self {
         Self {
-            //            path: db.path,
             db_type: 0,
             db_column: 0,
             db_year: 0,
@@ -74,13 +79,14 @@ impl ProxyDB {
         }
 
         let db = File::open(&path)?;
+        // SAFETY: read-only mapping; caller must not truncate the file.
         let map = unsafe { Mmap::map(&db) }?;
         let mut pdb = Self::new(Source::new(path.as_ref().to_path_buf(), map));
         pdb.read_header()?;
         Ok(pdb)
     }
 
-    pub fn ip_lookup(&self, ip: IpAddr) -> Result<ProxyRecord, Error> {
+    pub fn ip_lookup(&self, ip: IpAddr) -> Result<ProxyRecord<'_>, Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the Proxy information
         //!
         //! ## Example usage
@@ -137,7 +143,11 @@ impl ProxyDB {
         );
     }
 
-    fn read_header(&mut self) -> Result<(), Error> {
+    /// Parse and validate the 32-byte BIN file header.
+    ///
+    /// Accepts `product_code == 2` (modern IP2Proxy) or
+    /// `product_code == 0` (legacy databases).
+    pub(crate) fn read_header(&mut self) -> Result<(), Error> {
         self.db_type = self.source.read_u8(1)?;
         self.db_column = self.source.read_u8(2)?;
         self.db_year = self.source.read_u8(3)?;
@@ -152,14 +162,15 @@ impl ProxyDB {
         self.product_code = self.source.read_u8(30)?;
         self.licence_code = self.source.read_u8(31)?;
         self.database_size = self.source.read_u32(32)?;
-        if (self.db_year <= 20 && self.product_code == 0) || self.product_code == 2 {
+        if self.product_code == 0 || self.product_code == 2 {
             Ok(())
         } else {
             Err(Error::InvalidBinDatabase(self.db_year, self.product_code))
         }
     }
 
-    fn get_ipv4_record(&self, mut ip_number: u32) -> Result<ProxyRecord, Error> {
+    /// Binary search the IPv4 index/rows for the given IP number.
+    fn get_ipv4_record(&self, mut ip_number: u32) -> Result<ProxyRecord<'_>, Error> {
         let mut ip_from: u32;
         let mut ip_to: u32;
         if ip_number == MAX_IPV4_RANGE {
@@ -177,7 +188,6 @@ impl ProxyDB {
         if ipv4_index_base_address > 0 {
             let number = ip_number >> 16;
             let index_pos = ipv4_index_base_address + (number << 3);
-            //            let index_buffer = &mut vec![0_u8; 8];
             mem_offset = index_pos;
             low = self.source.read_u32(mem_offset as u64)?;
             high = self.source.read_u32((mem_offset + 4) as u64)?;
@@ -201,10 +211,11 @@ impl ProxyDB {
         Err(Error::RecordNotFound)
     }
 
-    fn get_ipv6_record(&self, ip_address: Ipv6Addr) -> Result<ProxyRecord, Error> {
+    /// Binary search the IPv6 index/rows for the given address.
+    fn get_ipv6_record(&self, ip_address: Ipv6Addr) -> Result<ProxyRecord<'_>, Error> {
         let base_address = self.ipv6_db_addr;
         let database_column = self.db_column;
-        let ipv6_index_base_address = self.ipv4_index_base_addr;
+        let ipv6_index_base_address = self.ipv6_index_base_addr;
         let mut low = 0_u32;
         let mut high = self.ipv6_db_count;
         let mut mid;
@@ -219,21 +230,20 @@ impl ProxyDB {
         if ipv6_index_base_address > 0 {
             let number = (ip_address.octets()[0] as u32 * 256) + ip_address.octets()[1] as u32;
             let index_pos = ipv6_index_base_address + (number << 3);
-            //let index_buffer = &mut vec![0_u8; 8];
             mem_offset = index_pos;
             low = self.source.read_u32(mem_offset as u64)?;
             high = self.source.read_u32((mem_offset + 4) as u64)?;
         }
         while low <= high {
             mid = (low + high) >> 1;
-            row_offset = base_address + (mid + column_offset as u32);
+            row_offset = base_address + (mid * column_offset as u32);
 
             mem_offset = row_offset;
             ip_from = self.source.read_ipv6(mem_offset as u64)?;
             ip_to = self
                 .source
                 .read_ipv6((mem_offset + column_offset as u32) as u64)?;
-            if ip_address > ip_from && ip_address < ip_to {
+            if ip_address >= ip_from && ip_address < ip_to {
                 return self.read_record(mem_offset + 16);
             } else if ip_address < ip_from {
                 high = mid - 1;
@@ -244,7 +254,9 @@ impl ProxyDB {
         Err(Error::RecordNotFound)
     }
 
-    fn read_record(&self, offset: u32) -> Result<ProxyRecord, Error> {
+    /// Read all available fields from the row at `offset` into a
+    /// [`ProxyRecord`]. Which fields are present depends on `db_type`.
+    fn read_record(&self, offset: u32) -> Result<ProxyRecord<'_>, Error> {
         let db_type = self.db_type as usize;
         let mut record = ProxyRecord::default();
 

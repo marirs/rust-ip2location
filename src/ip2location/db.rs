@@ -14,6 +14,11 @@ use std::{
     result::Result,
 };
 
+/// An opened IP2Location geolocation BIN database.
+///
+/// Holds the parsed header metadata and a memory-mapped [`Source`].
+/// Use [`DB::from_file`](crate::DB::from_file) to open, or
+/// [`LocationDB::from_file`] to open directly.
 #[derive(Debug)]
 pub struct LocationDB {
     db_type: u8,
@@ -34,6 +39,8 @@ pub struct LocationDB {
 }
 
 impl LocationDB {
+    /// Create an uninitialised `LocationDB` wrapping the given source.
+    /// The caller must call [`read_header`](Self::read_header) before use.
     pub(crate) fn new(source: Source) -> Self {
         Self {
             db_type: 0,
@@ -72,6 +79,7 @@ impl LocationDB {
         }
 
         let db = File::open(&path)?;
+        // SAFETY: read-only mapping; caller must not truncate the file.
         let map = unsafe { Mmap::map(&db) }?;
         let mut ldb = Self::new(Source::new(path.as_ref().to_path_buf(), map));
         ldb.read_header()?;
@@ -98,7 +106,7 @@ impl LocationDB {
         );
     }
 
-    pub fn ip_lookup(&self, ip: IpAddr) -> Result<LocationRecord, Error> {
+    pub fn ip_lookup(&self, ip: IpAddr) -> Result<LocationRecord<'_>, Error> {
         //! Lookup for the given IPv4 or IPv6 and returns the Geo information
         //!
         //! ## Example usage
@@ -146,7 +154,11 @@ impl LocationDB {
         }
     }
 
-    fn read_header(&mut self) -> Result<(), Error> {
+    /// Parse and validate the 32-byte BIN file header.
+    ///
+    /// Accepts `product_code == 1` (modern IP2Location) or
+    /// `product_code == 0` (legacy databases).
+    pub(crate) fn read_header(&mut self) -> Result<(), Error> {
         self.db_type = self.source.read_u8(1)?;
         self.db_column = self.source.read_u8(2)?;
         self.db_year = self.source.read_u8(3)?;
@@ -161,14 +173,15 @@ impl LocationDB {
         self.product_code = self.source.read_u8(30)?;
         self.license_code = self.source.read_u8(31)?;
         self.database_size = self.source.read_u32(32)?;
-        if (self.db_year <= 20 && self.product_code == 0) || self.product_code == 1 {
+        if self.product_code == 0 || self.product_code == 1 {
             Ok(())
         } else {
             Err(Error::InvalidBinDatabase(self.db_year, self.product_code))
         }
     }
 
-    fn ipv4_lookup(&self, mut ip_number: u32) -> Result<LocationRecord, Error> {
+    /// Binary search the IPv4 index/rows for the given IP number.
+    fn ipv4_lookup(&self, mut ip_number: u32) -> Result<LocationRecord<'_>, Error> {
         if ip_number == u32::MAX {
             ip_number -= 1;
         }
@@ -198,7 +211,8 @@ impl LocationDB {
         Err(Error::RecordNotFound)
     }
 
-    fn ipv6_lookup(&self, ipv6: Ipv6Addr) -> Result<LocationRecord, Error> {
+    /// Binary search the IPv6 index/rows for the given address.
+    fn ipv6_lookup(&self, ipv6: Ipv6Addr) -> Result<LocationRecord<'_>, Error> {
         let mut low = 0;
         let mut high = self.ipv6_db_count;
         if self.ipv6_index_base_addr > 0 {
@@ -228,7 +242,9 @@ impl LocationDB {
         Err(Error::RecordNotFound)
     }
 
-    fn read_record(&self, row_addr: u32) -> Result<LocationRecord, Error> {
+    /// Read all available fields from the row at `row_addr` into a
+    /// [`LocationRecord`]. Which fields are present depends on `db_type`.
+    fn read_record(&self, row_addr: u32) -> Result<LocationRecord<'_>, Error> {
         let mut result = LocationRecord::default();
 
         if COUNTRY_POSITION[self.db_type as usize] > 0 {

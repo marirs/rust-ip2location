@@ -1,11 +1,19 @@
+//! Error types returned by database operations.
+
 use std::{fmt, io};
 
+/// Errors that can occur when opening a database or performing a lookup.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
+    /// Catch-all for parse failures, slice errors, etc.
     GenericError(String),
+    /// File system errors (missing file, permission denied, …).
     IoError(String),
+    /// The IP address was not found in the database.
     RecordNotFound,
+    /// The file does not appear to be a valid IP2Location or IP2Proxy BIN database.
     UnknownDb,
+    /// The BIN header contains an unsupported `(db_year, product_code)` combination.
     InvalidBinDatabase(u8, u8),
 }
 
