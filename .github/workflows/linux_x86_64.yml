@@ -9,7 +9,6 @@ on:
       - '**/README.md'
       - '**/.gitignore'
       - '**/data'
-      -
 jobs:
   build:
     name: Test Rust ${{ matrix.rust }} on ${{ matrix.os }}
@@ -18,10 +17,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { rust: stable, os: ubuntu-latest }
+          - { rust: stable, os: ubuntu-24.04 }
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/cargo@v1
+      - uses: actions/checkout@v7
+      - name: Install Rust ${{ matrix.rust }}
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          command: test
+      - run: cargo test
